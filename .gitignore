@@ -1,0 +1,28 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Editor and OS junk
+.DS_Store
+.vscode/
+
+# Local test/cache artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Distribution/build outputs
+build/
+dist/
+*.egg-info/
+
+# Logs and databases
+*.log
+*.json
