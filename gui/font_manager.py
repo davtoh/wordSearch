@@ -14,27 +14,11 @@ import pygame.freetype
 EMOJI_FONT_PATH = Path(__file__).parent.parent / "assets" / "fonts" / "NotoColorEmoji.ttf"
 
 
-def is_emoji(char: str) -> bool:
-    """Checks if a character is within common Unicode emoji codepoint ranges."""
-    cp = ord(char)
-    return (
-        (0x1F300 <= cp <= 0x1FAFF)
-        or (0x2600 <= cp <= 0x27BF)
-        or (0x1F600 <= cp <= 0x1F64F)
-        or (0x1F680 <= cp <= 0x1F6FF)
-        or (0x1F900 <= cp <= 0x1F9FF)
-        or (0x2300 <= cp <= 0x23FF)
-        or (0x2B50 <= cp <= 0x2B55)
-        or cp in (0x203C, 0x2049, 0x2705, 0x274C, 0x274E, 0x2757)
-    )
-
-
 class FontManager:
     """Discovers multilingual system fonts and provides native composite rendering for text & emojis."""
 
     def __init__(self) -> None:
         self._font_path: Optional[str] = None
-        self._cjk_font_name: Optional[str] = None
         self._emoji_font: Optional[pygame.freetype.Font] = None
         self._text_fonts: Dict[Tuple[int, bool], pygame.freetype.Font] = {}
         self._surface_cache: Dict[Tuple[str, int, Tuple[int, int, int], bool], pygame.Surface] = {}
@@ -47,12 +31,12 @@ class FontManager:
         if not pygame.freetype.get_init():
             pygame.freetype.init()
 
-        # 1. Locate primary text / CJK system font
+        # 1. Locate primary text / CJK system font with broad Unicode coverage
         candidates = [
             # macOS
-            "/System/Library/Fonts/Hiragino Sans GB.ttc",
-            "/System/Library/Fonts/PingFang.ttc",
             "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+            "/System/Library/Fonts/PingFang.ttc",
+            "/System/Library/Fonts/Hiragino Sans GB.ttc",
             "/System/Library/Fonts/Helvetica.ttc",
             # Android (Pydroid 3)
             "/system/fonts/NotoSansCJK-Regular.ttc",
@@ -86,6 +70,32 @@ class FontManager:
                 self._emoji_font = None
 
         self._initialized = True
+
+    @staticmethod
+    def has_glyph(font: Optional[pygame.freetype.Font], char: str) -> bool:
+        """Checks dynamically if a font contains a rendered glyph for a character."""
+        if not font or not char:
+            return False
+        try:
+            metrics = font.get_metrics(char)
+            return bool(metrics and metrics[0] is not None)
+        except Exception:
+            return False
+
+    @staticmethod
+    def _is_emoji_or_symbol(cp: int) -> bool:
+        """Checks if a Unicode codepoint belongs to emoji or symbolic blocks."""
+        return (
+            (0x1F300 <= cp <= 0x1FAFF)
+            or (0x2600 <= cp <= 0x27BF)
+            or (0x1F600 <= cp <= 0x1F64F)
+            or (0x1F680 <= cp <= 0x1F6FF)
+            or (0x1F900 <= cp <= 0x1F9FF)
+            or (0x2300 <= cp <= 0x23FF)
+            or (0x2500 <= cp <= 0x25FF)  # Geometric shapes e.g. ▶, ◀
+            or (0x2B50 <= cp <= 0x2B55)
+            or cp in (0x203C, 0x2049, 0x2705, 0x274C, 0x274E, 0x2757)
+        )
 
     def get_text_font(self, size: int, bold: bool = False) -> pygame.freetype.Font:
         """Retrieves or loads cached FreeType text font."""
@@ -123,7 +133,7 @@ class FontManager:
         color: Tuple[int, int, int],
         bold: bool = False,
     ) -> pygame.Surface:
-        """Renders text and native color emojis into a composite anti-aliased surface with caching."""
+        """Renders text and native color emojis into a composite surface via dynamic glyph chaining."""
         self.init()
         cache_key = (text, size, color, bold)
         if cache_key in self._surface_cache:
@@ -131,11 +141,45 @@ class FontManager:
 
         text_font = self.get_text_font(size, bold=bold)
 
-        # Check if text contains any emoji characters
-        has_emojis = bool(self._emoji_font) and any(is_emoji(c) for c in text if c != "\ufe0f")
+        # Dynamic glyph classification & span partitioning
+        spans: List[Tuple[str, bool]] = []
+        curr_str = ""
+        curr_is_emoji = False
 
-        if not has_emojis:
-            # Fast path: pure text without emojis
+        for ch in text:
+            if ch == "\ufe0f":  # variation selector
+                continue
+            cp = ord(ch)
+            has_tf = self.has_glyph(text_font, ch)
+            has_ef = self.has_glyph(self._emoji_font, ch)
+
+            if has_ef and (not has_tf or self._is_emoji_or_symbol(cp)):
+                is_em = True
+            elif has_tf:
+                is_em = False
+            elif has_ef:
+                is_em = True
+            else:
+                is_em = False
+
+            if is_em != curr_is_emoji:
+                if curr_str:
+                    spans.append((curr_str, curr_is_emoji))
+                curr_str = ch
+                curr_is_emoji = is_em
+            else:
+                curr_str += ch
+
+        if curr_str:
+            spans.append((curr_str, curr_is_emoji))
+
+        if not spans:
+            surf = pygame.Surface((1, 1), pygame.SRCALPHA)
+            self._surface_cache[cache_key] = surf
+            return surf
+
+        # Fast path if no emoji spans exist
+        if not any(is_em for _, is_em in spans):
             try:
                 surf, _ = text_font.render(text, color, size=size)
             except Exception:
@@ -144,25 +188,7 @@ class FontManager:
             self._surface_cache[cache_key] = surf
             return surf
 
-        # Composite path: split text into text and emoji segments
-        spans: List[Tuple[str, bool]] = []
-        curr_str = ""
-        curr_is_emoji = False
-
-        for ch in text:
-            if ch == "\ufe0f":  # variation selector
-                continue
-            em = is_emoji(ch)
-            if em != curr_is_emoji:
-                if curr_str:
-                    spans.append((curr_str, curr_is_emoji))
-                curr_str = ch
-                curr_is_emoji = em
-            else:
-                curr_str += ch
-        if curr_str:
-            spans.append((curr_str, curr_is_emoji))
-
+        # Composite rendering with scaled emoji glyphs
         surfaces: List[pygame.Surface] = []
         total_w = 0
         max_h = size
@@ -175,7 +201,7 @@ class FontManager:
                         em_size = int(size * 1.05)
                         em_surf = pygame.transform.smoothscale(raw_surf, (em_size, em_size))
                         surfaces.append(em_surf)
-                        total_w += em_surf.get_width() + 2
+                        total_w += em_surf.get_width() + 1
                         max_h = max(max_h, em_surf.get_height())
                     except Exception:
                         pass
@@ -223,3 +249,4 @@ class FontManager:
 
 # Global singleton instance
 font_manager = FontManager()
+
