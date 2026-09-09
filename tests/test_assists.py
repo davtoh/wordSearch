@@ -11,7 +11,7 @@ from core.grid_engine import GridEngine
 @pytest.fixture
 def active_game():
     words = [{"word": "PLANET", "clue": "Celestial body orbiting a star."}]
-    puzzle = GridEngine.generate_puzzle(words, difficulty=Difficulty.EASY)
+    puzzle = GridEngine.generate_puzzle(words, difficulty=Difficulty.EASY, custom_dimensions=(12, 12))
     return GameState(puzzle)
 
 
@@ -58,11 +58,12 @@ def test_proximity_calculation(active_game):
     assert res["status"] == "BURNING"
     assert res["distance"] == 0.0
 
-    # Clicking far away should return COOL or COLD
-    far_r = (start_r + 8) % active_game.puzzle.rows
-    far_c = (start_c + 8) % active_game.puzzle.cols
+    # Pick the furthest opposite corner on the 12x12 board
+    far_r = 0 if start_r > 6 else 11
+    far_c = 0 if start_c > 6 else 11
     res_far = provider.calculate_proximity(active_game, (far_r, far_c))
-    assert res_far["status"] in ("COOL", "COLD", "WARM")
+    assert res_far["distance"] >= 4.0
+    assert res_far["status"] in ("COOL", "COLD")
 
 
 def test_assist_registry_dispatch(active_game):

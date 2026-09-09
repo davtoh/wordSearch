@@ -110,9 +110,24 @@ def detect_script(words: List[str]) -> ScriptType:
         else:
             counts[ScriptType.LATIN] += 1
 
-    # Return script with the highest representation
-    best_script = max(counts.items(), key=lambda item: item[1])[0]
-    return best_script
+    # If any CJK characters are present, prioritize CJK script with highest count
+    cjk_total = counts[ScriptType.HIRAGANA] + counts[ScriptType.KATAKANA] + counts[ScriptType.KANJI]
+    if cjk_total > 0:
+        cjk_scores = {
+            ScriptType.HIRAGANA: counts[ScriptType.HIRAGANA],
+            ScriptType.KATAKANA: counts[ScriptType.KATAKANA],
+            ScriptType.KANJI: counts[ScriptType.KANJI],
+        }
+        return max(cjk_scores.items(), key=lambda item: item[1])[0]
+
+    if counts[ScriptType.CYRILLIC] > 0:
+        return ScriptType.CYRILLIC
+
+    # If Latin accented characters are present, use Latin Accented pool
+    if counts[ScriptType.LATIN_ACCENTED] > 0:
+        return ScriptType.LATIN_ACCENTED
+
+    return ScriptType.LATIN
 
 
 def normalize_word_for_puzzle(word: str, script: ScriptType) -> str:
