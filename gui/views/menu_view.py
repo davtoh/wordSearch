@@ -20,10 +20,10 @@ class MenuView:
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.active_tab: str = "packs"  # "packs", "ai_topic", "ai_text", "custom"
 
-        # Tab navigation buttons
+        # Tab navigation buttons with native Unicode emojis
         self.btn_tab_packs = Button((0, 0, 150, 40), "📦 Offline Packs")
-        self.btn_tab_topic = Button((0, 0, 160, 40), "✨ AI Topic", is_secondary=True)
-        self.btn_tab_text = Button((0, 0, 160, 40), "📝 AI Text Notes", is_secondary=True)
+        self.btn_tab_topic = Button((0, 0, 150, 40), "✨ AI Topic", is_secondary=True)
+        self.btn_tab_text = Button((0, 0, 160, 40), "📝 AI Notes", is_secondary=True)
         self.btn_tab_custom = Button((0, 0, 140, 40), "✏️ Custom List", is_secondary=True)
 
         self.btn_study_deck = Button((0, 0, 140, 40), "📚 Study Deck", is_secondary=True)
@@ -40,18 +40,18 @@ class MenuView:
         self.btn_diff_dyn = Button((0, 0, 90, 32), "Dynamic", is_secondary=True)
 
         self.btn_mode_casual = Button((0, 0, 90, 32), "Casual")
-        self.btn_mode_timed = Button((0, 0, 110, 32), "⏱️ Timed Attack", is_secondary=True)
+        self.btn_mode_timed = Button((0, 0, 140, 32), "⏱️ Timed Attack", is_secondary=True)
         self.btn_toggle_concept = Button((0, 0, 180, 32), "Concept-First: OFF", is_secondary=True)
 
         # Input boxes for AI & Custom
         self.input_topic = InputBox((0, 0, 500, 42), placeholder="e.g. Space Exploration, Marine Biology, Japanese verbs")
-        self.btn_generate_topic = Button((0, 0, 160, 42), "🚀 Generate Puzzle")
+        self.btn_generate_topic = Button((0, 0, 180, 42), "🚀 Generate Puzzle")
 
         self.input_text = InputBox((0, 0, 500, 120), placeholder="Paste student notes, article, or documentation here...", is_multiline=True)
-        self.btn_extract_text = Button((0, 0, 160, 42), "🔍 Extract & Play")
+        self.btn_extract_text = Button((0, 0, 180, 42), "🔍 Extract & Play")
 
         self.input_custom = InputBox((0, 0, 500, 42), placeholder="Enter words separated by commas: PYTHON, CODE, GAME")
-        self.btn_play_custom = Button((0, 0, 160, 42), "▶ Play Custom")
+        self.btn_play_custom = Button((0, 0, 170, 42), "▶ Play Custom")
 
         # Available packs list
         self.packs: List[PuzzlePack] = []
@@ -74,12 +74,12 @@ class MenuView:
         # Header Tabs
         ty = 65
         self.btn_tab_packs.rect = pygame.Rect(30, ty, 150, 40)
-        self.btn_tab_topic.rect = pygame.Rect(188, ty, 150, 40)
-        self.btn_tab_text.rect = pygame.Rect(346, ty, 160, 40)
-        self.btn_tab_custom.rect = pygame.Rect(514, ty, 140, 40)
+        self.btn_tab_topic.rect = pygame.Rect(188, ty, 140, 40)
+        self.btn_tab_text.rect = pygame.Rect(336, ty, 140, 40)
+        self.btn_tab_custom.rect = pygame.Rect(484, ty, 140, 40)
 
-        self.btn_study_deck.rect = pygame.Rect(container_rect.width - 210, ty, 130, 40)
-        self.btn_theme_toggle.rect = pygame.Rect(container_rect.width - 70, ty, 44, 40)
+        self.btn_study_deck.rect = pygame.Rect(container_rect.width - 210, ty, 140, 40)
+        self.btn_theme_toggle.rect = pygame.Rect(container_rect.width - 60, ty, 44, 40)
 
         # Options Row at bottom of settings
         oy = 120
@@ -88,17 +88,17 @@ class MenuView:
         self.btn_diff_hard.rect = pygame.Rect(200, oy, 75, 30)
         self.btn_diff_dyn.rect = pygame.Rect(280, oy, 90, 30)
 
-        self.btn_mode_casual.rect = pygame.Rect(400, oy, 80, 30)
-        self.btn_mode_timed.rect = pygame.Rect(485, oy, 120, 30)
-        self.btn_toggle_concept.rect = pygame.Rect(620, oy, 180, 30)
+        self.btn_mode_casual.rect = pygame.Rect(390, oy, 80, 30)
+        self.btn_mode_timed.rect = pygame.Rect(475, oy, 140, 30)
+        self.btn_toggle_concept.rect = pygame.Rect(625, oy, 175, 30)
 
         # AI inputs positioning
         center_x = container_rect.centerx
         self.input_topic.rect = pygame.Rect(center_x - 300, 220, 420, 42)
-        self.btn_generate_topic.rect = pygame.Rect(center_x + 130, 220, 170, 42)
+        self.btn_generate_topic.rect = pygame.Rect(center_x + 130, 220, 180, 42)
 
         self.input_text.rect = pygame.Rect(center_x - 300, 200, 600, 160)
-        self.btn_extract_text.rect = pygame.Rect(center_x - 80, 375, 160, 42)
+        self.btn_extract_text.rect = pygame.Rect(center_x - 90, 375, 180, 42)
 
         self.input_custom.rect = pygame.Rect(center_x - 300, 220, 420, 42)
         self.btn_play_custom.rect = pygame.Rect(center_x + 130, 220, 170, 42)

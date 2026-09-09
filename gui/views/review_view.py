@@ -20,7 +20,7 @@ class ReviewView:
         self.rect = pygame.Rect(0, 0, 0, 0)
         self.btn_next = Button((0, 0, 140, 42), "Next Puzzle")
         self.btn_menu = Button((0, 0, 140, 42), "Main Menu", is_secondary=True)
-        self.btn_study = Button((0, 0, 140, 42), "Study Deck", is_secondary=True)
+        self.btn_study = Button((0, 0, 140, 42), "📚 Study Deck", is_secondary=True)
         self.scroll_y = 0
 
     def update_layout(self, container_rect: pygame.Rect) -> None:
@@ -87,7 +87,7 @@ class ReviewView:
         stats_y = modal_rect.y + 65
         stats_str = (
             f"⏱️ Time: {int(telemetry.active_elapsed_seconds)}s   |   "
-            f"⚡ Velocity: {telemetry.current_velocity:.1f}s/word   |   "
+            f"⚡ Speed: {telemetry.current_velocity:.1f}s/w   |   "
             f"🎯 Accuracy: {int(telemetry.accuracy_rate)}%   |   "
             f"✓ Found: {len(game_state.found_words)}/{len(game_state.puzzle.words)}"
         )

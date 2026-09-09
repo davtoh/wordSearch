@@ -18,10 +18,10 @@ class MasteryView:
 
     def __init__(self) -> None:
         self.rect = pygame.Rect(0, 0, 0, 0)
-        self.btn_back = Button((0, 0, 120, 38), "← Back", is_secondary=True)
-        self.btn_practice = Button((0, 0, 200, 38), "🎯 Practice Difficult Words")
+        self.btn_back = Button((0, 0, 110, 38), "← Back", is_secondary=True)
+        self.btn_practice = Button((0, 0, 220, 38), "🎯 Practice Difficult Words")
 
-        self.btn_filter_all = Button((0, 0, 100, 32), "All", is_secondary=False)
+        self.btn_filter_all = Button((0, 0, 90, 32), "All", is_secondary=False)
         self.btn_filter_mastered = Button((0, 0, 130, 32), "🌟 Mastered", is_secondary=True)
         self.btn_filter_learning = Button((0, 0, 120, 32), "📖 Learning", is_secondary=True)
         self.btn_filter_practice = Button((0, 0, 150, 32), "⚠️ Needs Practice", is_secondary=True)
@@ -34,14 +34,14 @@ class MasteryView:
     def update_layout(self, container_rect: pygame.Rect) -> None:
         self.rect = container_rect
         self.btn_back.rect = pygame.Rect(24, 20, 110, 38)
-        self.btn_practice.rect = pygame.Rect(container_rect.width - 234, 20, 210, 38)
+        self.btn_practice.rect = pygame.Rect(container_rect.width - 244, 20, 220, 38)
 
         # Filters
         fy = 75
-        self.btn_filter_all.rect = pygame.Rect(24, fy, 90, 32)
-        self.btn_filter_mastered.rect = pygame.Rect(122, fy, 130, 32)
-        self.btn_filter_learning.rect = pygame.Rect(260, fy, 120, 32)
-        self.btn_filter_practice.rect = pygame.Rect(388, fy, 160, 32)
+        self.btn_filter_all.rect = pygame.Rect(24, fy, 80, 32)
+        self.btn_filter_mastered.rect = pygame.Rect(112, fy, 130, 32)
+        self.btn_filter_learning.rect = pygame.Rect(250, fy, 120, 32)
+        self.btn_filter_practice.rect = pygame.Rect(378, fy, 160, 32)
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         if self.btn_back.handle_event(event):
@@ -108,7 +108,7 @@ class MasteryView:
 
         stats = VocabularyDeckManager.get_summary_stats(profile)
         stats_text = (
-            f"Total Words: {stats['total_words']}  |  "
+            f"Total: {stats['total_words']}  |  "
             f"Mastered: {stats['mastered']}  |  "
             f"Learning: {stats['learning']}  |  "
             f"Needs Practice: {stats['needs_practice']}"

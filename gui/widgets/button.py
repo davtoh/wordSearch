@@ -77,7 +77,7 @@ class Button:
         border_width = 3 if self.is_focused else 1
         pygame.draw.rect(surface, border_color, self.rect, width=border_width, border_radius=self.border_radius)
 
-        # Draw text
+        # Draw text (with native color emoji & CJK support)
         txt_color = self.custom_text or (theme.text_primary if self.is_secondary else (255, 255, 255))
         font_manager.draw_text(
             surface,

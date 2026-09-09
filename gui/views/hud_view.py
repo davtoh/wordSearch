@@ -20,7 +20,7 @@ class HudView:
         self.rect = pygame.Rect(0, 0, 0, 56)
         self.btn_menu = Button((0, 0, 80, 36), "Menu", is_secondary=True)
         self.btn_pause = Button((0, 0, 80, 36), "Pause", is_secondary=True)
-        self.btn_hint = Button((0, 0, 80, 36), "💡 Hint", is_secondary=False)
+        self.btn_hint = Button((0, 0, 88, 36), "💡 Hint", is_secondary=False)
         self.btn_giveup = Button((0, 0, 90, 36), "Give Up", is_secondary=True)
         self.btn_theme = Button((0, 0, 44, 36), "🌓", is_secondary=True)
 
@@ -32,7 +32,7 @@ class HudView:
 
         # Right-aligned buttons
         self.btn_giveup.rect = pygame.Rect(width - 96, 10, 86, 36)
-        self.btn_hint.rect = pygame.Rect(width - 186, 10, 82, 36)
+        self.btn_hint.rect = pygame.Rect(width - 192, 10, 88, 36)
 
     def handle_event(self, event: pygame.event.Event) -> bool:
         if self.btn_menu.handle_event(event):
@@ -86,7 +86,7 @@ class HudView:
         font_manager.draw_text(
             surface,
             time_str,
-            (center_x - 110, y),
+            (center_x - 120, y),
             18,
             timer_color,
             bold=True,
@@ -111,7 +111,7 @@ class HudView:
         font_manager.draw_text(
             surface,
             f"🎯 {int(acc)}%",
-            (center_x + 95, y),
+            (center_x + 110, y),
             16,
             theme.text_secondary,
             bold=True,

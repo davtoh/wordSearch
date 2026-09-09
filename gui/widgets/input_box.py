@@ -92,6 +92,5 @@ class InputBox:
             self.rect.height - 2 * margin,
         )
 
-        font = font_manager.get_font(self.font_size)
-        rendered = font.render(display_text, True, text_color)
+        rendered = font_manager.render(display_text, self.font_size, text_color)
         surface.blit(rendered, inner_rect)

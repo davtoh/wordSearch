@@ -1,10 +1,12 @@
 """Main Pygame Application Coordinator and Event Loop."""
 from __future__ import annotations
 
+import os
 import sys
 import time
 from typing import List, Optional, Tuple
 
+os.environ["PYGAME_FREETYPE"] = "1"
 import pygame
 
 from ai.text_extractor import TextExtractor
