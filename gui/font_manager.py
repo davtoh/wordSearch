@@ -4,12 +4,30 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from config.settings import settings
 
-# Enable FreeType backend before pygame font initialization
+# Enable FreeType backend before pygame font initialization when available.
 os.environ["PYGAME_FREETYPE"] = "1"
 
 import pygame
-import pygame.freetype
+
+HAS_PYGAME_FONT = hasattr(pygame, "font")
+if HAS_PYGAME_FONT:
+    pygame.font.init()
+
+try:
+    import pygame.freetype as pygame_freetype
+except (ImportError, ModuleNotFoundError):
+    # Some lightweight test shims expose freetype as an attribute only.
+    pygame_freetype = getattr(pygame, "freetype", None)
+
+HAS_FREETYPE = pygame_freetype is not None
+if HAS_FREETYPE:
+    try:
+        pygame_freetype.init()
+    except Exception:
+        pygame_freetype = None
+        HAS_FREETYPE = False
 
 EMOJI_FONT_PATH = Path(__file__).parent.parent / "assets" / "fonts" / "NotoColorEmoji.ttf"
 
@@ -28,8 +46,8 @@ class FontManager:
         """Initializes FreeType subsystem and locates optimal primary & emoji fonts."""
         if self._initialized:
             return
-        if not pygame.freetype.get_init():
-            pygame.freetype.init()
+        if HAS_FREETYPE and not pygame_freetype.get_init():
+            pygame_freetype.init()
 
         # 1. Locate primary text / CJK system font with broad Unicode coverage
         candidates = [
@@ -56,7 +74,7 @@ class FontManager:
         for path in candidates:
             if os.path.exists(path):
                 try:
-                    pygame.freetype.Font(path, 16)
+                    self._load_font(path, 16)
                     self._font_path = path
                     break
                 except Exception:
@@ -65,7 +83,12 @@ class FontManager:
         # 2. Load bundled emoji font if available
         if EMOJI_FONT_PATH.exists():
             try:
-                self._emoji_font = pygame.freetype.Font(str(EMOJI_FONT_PATH))
+                if HAS_FREETYPE:
+                    # Keep the original FreeType behavior: color emoji fonts
+                    # choose their own size and reject explicit pixel sizes.
+                    self._emoji_font = pygame_freetype.Font(str(EMOJI_FONT_PATH))
+                else:
+                    self._emoji_font = pygame.font.Font(str(EMOJI_FONT_PATH), 16)
             except Exception:
                 self._emoji_font = None
 
@@ -83,6 +106,19 @@ class FontManager:
             return False
 
     @staticmethod
+    def _load_font(font_path: Optional[str], size: int) -> pygame.freetype.Font:
+        if HAS_FREETYPE:
+            return pygame_freetype.Font(font_path, size)
+        return pygame.font.Font(font_path, size)
+
+    @staticmethod
+    def _render_font(font: pygame.freetype.Font, text: str, color: Tuple[int, int, int], size: int) -> pygame.Surface:
+        if HAS_FREETYPE:
+            rendered, _ = font.render(text, color, size=size)
+            return rendered
+        return font.render(text, True, color)
+
+    @staticmethod
     def _is_emoji_or_symbol(cp: int) -> bool:
         """Checks if a Unicode codepoint belongs to emoji or symbolic blocks."""
         return (
@@ -98,7 +134,7 @@ class FontManager:
         )
 
     def get_text_font(self, size: int, bold: bool = False) -> pygame.freetype.Font:
-        """Retrieves or loads cached FreeType text font."""
+        """Retrieves a cached FreeType or pygame.font text font."""
         self.init()
         key = (size, bold)
         if key in self._text_fonts:
@@ -107,21 +143,24 @@ class FontManager:
         font: Optional[pygame.freetype.Font] = None
         if self._font_path:
             try:
-                font = pygame.freetype.Font(self._font_path, size)
-                if bold:
-                    font.strong = True
+                font = self._load_font(self._font_path, size)
             except Exception:
                 font = None
 
         if font is None:
             try:
-                font = pygame.freetype.SysFont("sans-serif", size)
-                if bold:
-                    font.strong = True
+                if HAS_FREETYPE:
+                    font = pygame_freetype.SysFont("sans-serif", size)
+                else:
+                    font = pygame.font.SysFont("sans-serif", size)
             except Exception:
-                font = pygame.freetype.Font(None, size)
-                if bold:
-                    font.strong = True
+                font = self._load_font(None, size)
+
+        if bold:
+            if HAS_FREETYPE:
+                font.strong = True
+            else:
+                font.set_bold(True)
 
         self._text_fonts[key] = font
         return font
@@ -181,10 +220,10 @@ class FontManager:
         # Fast path if no emoji spans exist
         if not any(is_em for _, is_em in spans):
             try:
-                surf, _ = text_font.render(text, color, size=size)
+                surf = self._render_font(text_font, text, color, size)
             except Exception:
                 ascii_text = text.encode("ascii", "replace").decode("ascii")
-                surf, _ = text_font.render(ascii_text, color, size=size)
+                surf = self._render_font(text_font, ascii_text, color, size)
             self._surface_cache[cache_key] = surf
             return surf
 
@@ -197,7 +236,10 @@ class FontManager:
             if is_em and self._emoji_font:
                 for ch in s:
                     try:
-                        raw_surf, _ = self._emoji_font.render(ch)
+                        if HAS_FREETYPE:
+                            raw_surf, _ = self._emoji_font.render(ch)
+                        else:
+                            raw_surf = self._emoji_font.render(ch, True, color)
                         em_size = int(size * 1.05)
                         em_surf = pygame.transform.smoothscale(raw_surf, (em_size, em_size))
                         surfaces.append(em_surf)
@@ -207,7 +249,7 @@ class FontManager:
                         pass
             else:
                 try:
-                    txt_surf, _ = text_font.render(s, color, size=size)
+                    txt_surf = self._render_font(text_font, s, color, size)
                     surfaces.append(txt_surf)
                     total_w += txt_surf.get_width()
                     max_h = max(max_h, txt_surf.get_height())
