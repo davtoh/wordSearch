@@ -25,6 +25,12 @@ class Difficulty(str, Enum):
     DYNAMIC = "dynamic"
 
 
+class ThemeMode(str, Enum):
+    """Game theme presets."""
+    DARK = "dark"
+    LIGHT = "light"
+
+
 class Direction(str, Enum):
     """Allowed 8-way directional vectors for word placement and selection."""
     HORIZONTAL_LR = "HORIZONTAL_LR"   # (0, 1)  -> Right

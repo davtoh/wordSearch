@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List
+from config.settings import settings
 
 from ai.gemini_client import gemini_client
+from core.enums import Difficulty
 
 
 class TopicGenerator:
@@ -12,10 +14,10 @@ class TopicGenerator:
     @staticmethod
     def generate_words(
         topic: str,
-        language: str = "en",
-        count: int = 10,
-        difficulty: str = "medium",
-        script: str = "latin",
+        language: str = settings.get("default_language", "en"),
+        count: int = settings.get("default_vocabulary_count", 10),
+        difficulty: str = settings.get("default_difficulty", Difficulty.EASY),
+        script: str = settings.get("default_script", "latin"),
     ) -> List[Dict[str, Any]]:
         """Generates a structured list of words and clues for a requested topic."""
         system_instruction = (

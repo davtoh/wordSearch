@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from config.settings import settings
 
 from core.enums import HintTier, MasteryLevel
 from core.models import PlayerProfile, WordEntry, WordMasteryRecord
@@ -17,7 +17,7 @@ class MasteryTracker:
         word_entry: WordEntry,
         solve_time_seconds: float,
         error_clicks: int = 0,
-        language: str = "en",
+        language: str = settings.get("default_language", "en"),
     ) -> WordMasteryRecord:
         """Updates or creates a vocabulary mastery record in the player's profile."""
         key = f"{language}:{word_entry.word.upper()}"
@@ -60,7 +60,7 @@ class MasteryTracker:
             return MasteryLevel.MASTERED
 
         # Needs practice: slow (>45s) or required heavy hints (Tier 4+) or high errors
-        if avg_time > 45.0 or max_hint >= int(HintTier.TIER_4_ORIENTATION) or (record.error_clicks / record.times_encountered) >= 3:
+        if avg_time > settings.get("mastery_needs_practice_threshold", 45.0) or max_hint >= int(HintTier.TIER_4_ORIENTATION) or (record.error_clicks / record.times_encountered) >= 3:
             return MasteryLevel.NEEDS_PRACTICE
 
         return MasteryLevel.LEARNING

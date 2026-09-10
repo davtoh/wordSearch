@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
+from config.settings import settings
 
 from core.enums import MasteryLevel
 from core.models import PlayerProfile
@@ -14,8 +15,8 @@ class AdaptiveRecommender:
     @staticmethod
     def get_review_words(
         profile: PlayerProfile,
-        language: str = "en",
-        target_count: int = 10,
+        language: str = settings.get("default_language", "en"),
+        target_count: int = settings.get("default_vocabulary_count", 10),
     ) -> List[Dict[str, Any]]:
         """
         Selects candidate review words prioritizing NEEDS_PRACTICE, then LEARNING.

@@ -10,6 +10,7 @@ from assists.proximity_assist import ProximityAssistProvider
 from assists.time_bonus_assist import TimeBonusAssistProvider
 from core.game_state import GameState
 from core.models import WordEntry
+from config.settings import settings
 
 
 class AssistRegistry:
@@ -23,7 +24,8 @@ class AssistRegistry:
         self.stall_detector = AutoStallDetector()
 
         self.register(self.hints)
-        self.register(self.proximity)
+        if settings.get("proximity_assist_enabled", True):
+            self.register(self.proximity)
         self.register(self.time_bonus)
         self.register(self.stall_detector)
 

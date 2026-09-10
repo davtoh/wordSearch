@@ -6,13 +6,14 @@ from typing import Any, Dict, Optional
 from assists.base import BaseAssistProvider
 from core.game_state import GameState
 from core.models import AssistConfig, WordEntry
+from config.settings import settings
 
 
 class AutoStallDetector(BaseAssistProvider):
     """Detects when player has stalled or struggled and prompts an assistance reminder."""
 
-    def __init__(self, stall_threshold_seconds: float = 45.0) -> None:
-        self.stall_threshold = stall_threshold_seconds
+    def __init__(self, stall_threshold_seconds: float = None) -> None:
+        self.stall_threshold = stall_threshold_seconds or settings.get("auto_stall_hint_seconds", 45.0)
         self.seconds_since_last_find = 0.0
         self.stall_triggered = False
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from config.settings import settings
 
 from core.enums import Difficulty, ScriptType
 from core.grid_engine import GridEngine
@@ -23,7 +24,7 @@ class PuzzlePack:
         self.id: str = data.get("id", "pack_unknown")
         self.title: str = data.get("title", "Untitled Pack")
         self.description: str = data.get("description", "")
-        self.language: str = data.get("language", "en")
+        self.language: str = data.get("language", settings.get("default_language", "en"))
         self.script_type: ScriptType = ScriptType(data.get("script_type", "latin"))
         self.puzzles_data: List[Dict[str, Any]] = data.get("puzzles", [])
 

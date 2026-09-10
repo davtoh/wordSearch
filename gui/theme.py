@@ -1,14 +1,16 @@
 """Visual Themes and Color Palettes for Pygame GUI."""
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+from typing import List, Tuple
+from config.settings import settings
+from core.enums import ThemeMode
 
 
 class Theme:
     """Color definitions for Light and Dark modes with accessibility high-contrast accents."""
 
-    def __init__(self, mode: str = "dark") -> None:
-        self.is_dark = (mode.lower() == "dark")
+    def __init__(self, mode: ThemeMode = settings.get('theme', ThemeMode.DARK)) -> None:
+        self.is_dark = (mode == ThemeMode.DARK)
         self._set_colors()
 
     def _set_colors(self) -> None:
@@ -62,10 +64,11 @@ class Theme:
     def toggle(self) -> str:
         self.is_dark = not self.is_dark
         self._set_colors()
-        return "dark" if self.is_dark else "light"
+        settings.set('theme', ThemeMode.DARK if self.is_dark else ThemeMode.LIGHT)
+        return ThemeMode.DARK if self.is_dark else ThemeMode.LIGHT
 
     def get_word_color(self, index: int) -> Tuple[int, int, int]:
         return self.word_highlighters[index % len(self.word_highlighters)]
 
 
-theme = Theme("dark")
+theme = Theme(settings.get('theme', ThemeMode.DARK))

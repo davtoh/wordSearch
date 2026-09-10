@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from core.enums import Difficulty, GameMode, ThemeMode
+
 CONFIG_DIR = Path(__file__).parent
 DEFAULT_CONFIG_PATH = CONFIG_DIR / "default_config.json"
 DIFFICULTY_PRESETS_PATH = CONFIG_DIR / "difficulty_presets.json"
@@ -29,15 +31,18 @@ class Settings:
             except Exception:
                 pass
         return {
-            "theme": "dark",
+            "theme": ThemeMode.DARK,
             "default_language": "en",
-            "default_difficulty": "easy",
+            "default_difficulty": Difficulty.EASY,
             "concept_first_mode": False,
-            "game_mode": "casual",
+            "game_mode": GameMode.CASUAL,
             "timed_attack_seconds": 240,
             "sound_enabled": True,
             "proximity_assist_enabled": True,
-            "auto_stall_hint_seconds": 45,
+            "auto_stall_hint_seconds": 45.0,
+            "mastery_needs_practice_threshold": 45.0,
+            "font_size": 16, # TODO: Make this dynamic based on screen size and user preference
+            "ui_scale": 1.05,
             "screen_width": 1024,
             "screen_height": 720,
             "fps": 60,
@@ -65,8 +70,10 @@ class Settings:
     def save(self) -> None:
         """Persists current configuration to user_config.json."""
         try:
-            with open(self.config_path, "w", encoding="utf-8") as f:
+            tmp_path = self.config_path.with_suffix('.tmp.json')
+            with open(tmp_path, "w", encoding="utf-8") as f:
                 json.dump(self._config, f, indent=2, ensure_ascii=False)
+            os.replace(tmp_path, self.config_path)
         except Exception:
             pass
 

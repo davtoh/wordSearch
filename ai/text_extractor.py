@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from typing import Any, Dict, List
+from config.settings import settings
 
 from ai.gemini_client import gemini_client
 
@@ -14,8 +15,8 @@ class TextExtractor:
     @staticmethod
     def extract_from_text(
         raw_text: str,
-        language: str = "en",
-        count: int = 10,
+        language: str = settings.get("default_language", "en"),
+        count: int = settings.get("default_vocabulary_count", 10),
     ) -> List[Dict[str, Any]]:
         """Extracts key vocabulary words and generates educational clues from input text."""
         if not raw_text.strip():

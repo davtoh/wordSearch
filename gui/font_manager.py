@@ -240,7 +240,7 @@ class FontManager:
                             raw_surf, _ = self._emoji_font.render(ch)
                         else:
                             raw_surf = self._emoji_font.render(ch, True, color)
-                        em_size = int(size * 1.05)
+                        em_size = int(size * settings.get("ui_scale", 1.05))
                         em_surf = pygame.transform.smoothscale(raw_surf, (em_size, em_size))
                         surfaces.append(em_surf)
                         total_w += em_surf.get_width() + 1

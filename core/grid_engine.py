@@ -4,6 +4,7 @@ from __future__ import annotations
 import math
 import random
 from typing import Any, Dict, List, Optional, Set, Tuple
+from config.settings import settings
 
 from core.enums import Difficulty, Direction, ScriptType
 from core.models import AssistConfig, Puzzle, PuzzleMetadata, WordEntry
@@ -73,7 +74,7 @@ class GridEngine:
         words_data: List[Dict[str, Any]],
         title: str = "Word Search",
         theme: str = "General",
-        language: str = "en",
+        language: str = settings.get("default_language", "en"),
         difficulty: Difficulty = Difficulty.EASY,
         custom_dimensions: Optional[Tuple[int, int]] = None,
         script_type: Optional[ScriptType] = None,

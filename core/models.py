@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
+from config.settings import settings
 
 from core.enums import Difficulty, Direction, HintTier, MasteryLevel, ScriptType
 
@@ -37,9 +38,9 @@ class PuzzleMetadata(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     title: str = "Word Search"
     theme: str = "General"
-    language: str = "en"
+    language: str = settings.get("default_language", "en")
     script_type: ScriptType = ScriptType.LATIN
-    difficulty: Difficulty = Difficulty.EASY
+    difficulty: Difficulty = settings.get("default_difficulty", Difficulty.EASY)
     author: str = "System"
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     description: Optional[str] = None
@@ -48,8 +49,8 @@ class PuzzleMetadata(BaseModel):
 class AssistConfig(BaseModel):
     """Pluggable assist settings and difficulty constraints."""
     allowed_hint_tiers: List[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5, 6])
-    proximity_enabled: bool = True
-    time_limit_seconds: int = 240
+    proximity_enabled: bool = settings.get("proximity_assist_enabled", True)
+    time_limit_seconds: int = settings.get("timed_attack_seconds", 240)
     bonus_time_per_word: int = 15
     is_shifting: bool = False
     density_target: float = 0.65
@@ -87,7 +88,7 @@ class Puzzle(BaseModel):
 class WordMasteryRecord(BaseModel):
     """Tracks player mastery metrics for an individual vocabulary word."""
     word: str
-    language: str = "en"
+    language: str = settings.get("default_language", "en")
     clue: Optional[str] = None
     reading: Optional[str] = None
     times_encountered: int = 0

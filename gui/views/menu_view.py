@@ -10,6 +10,7 @@ from gui.font_manager import font_manager
 from gui.theme import theme
 from gui.widgets.button import Button
 from gui.widgets.input_box import InputBox
+from config.settings import settings
 from storage.pack_loader import PackLoader, PuzzlePack
 
 
@@ -30,9 +31,9 @@ class MenuView:
         self.btn_theme_toggle = Button((0, 0, 44, 40), "🌓", is_secondary=True)
 
         # Options buttons
-        self.selected_difficulty: Difficulty = Difficulty.EASY
-        self.selected_mode: GameMode = GameMode.CASUAL
-        self.concept_first_mode: bool = False
+        self.selected_difficulty: Difficulty = Difficulty(settings.get('default_difficulty', Difficulty.EASY))
+        self.selected_mode: GameMode = GameMode(settings.get('game_mode', GameMode.CASUAL))
+        self.concept_first_mode: bool = settings.get('concept_first_mode', False)
 
         self.btn_diff_easy = Button((0, 0, 80, 32), "Easy")
         self.btn_diff_med = Button((0, 0, 90, 32), "Medium", is_secondary=True)
