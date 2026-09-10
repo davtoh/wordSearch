@@ -38,13 +38,14 @@ class Button:
         self.is_pressed = False
 
     def handle_event(self, event: pygame.event.Event) -> bool:
-        """Processes mouse/touch events and executes callback on click."""
+        """Processes mouse/touch events and executes callback on click.
+        The click is only triggered on mouse button release to avoid toggling on press.
+        """
         if event.type == pygame.MOUSEMOTION:
             self.is_hovered = self.rect.collidepoint(event.pos)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.is_pressed = True
-                return True
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self.is_pressed:
                 self.is_pressed = False
