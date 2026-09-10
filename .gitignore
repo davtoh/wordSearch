@@ -25,4 +25,5 @@ dist/
 
 # Logs and databases
 *.log
+assets/
 *.json

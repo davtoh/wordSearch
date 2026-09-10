@@ -73,6 +73,22 @@ python main.py --cli --topic "Astronomy" --difficulty medium
 
 ---
 
+## 📦 Required Fonts
+
+The project includes an `assets/fonts/` directory containing the following font files:
+
+- `NotoColorEmoji.ttf` – provides full emoji support.
+- `NotoEmoji-Regular.ttf` – additional emoji glyphs.
+- `Symbola.otf` / `Symbola.ttf` – fallback for various symbols and icons.
+
+These fonts are required for proper rendering of emojis and special symbols used throughout the UI (e.g., 📚, ▶, 🎮). If the `assets/fonts/` directory is missing, download the fonts from the official sources:
+
+- **Noto Color Emoji**: https://github.com/googlefonts/noto-emoji/releases
+- **Noto Emoji**: https://github.com/googlefonts/noto-emoji/releases
+- **Symbola**: https://github.com/konsumer/symbola
+
+After downloading, place the `.ttf`/`.otf` files into `assets/fonts/`. The repository’s `.gitignore` already excludes the `assets/` directory to keep the repo lightweight.
+
 ## 🎮 How to Play
 
 ### In Pygame GUI:
