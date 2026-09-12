@@ -1,6 +1,7 @@
 """Unified Entry Point for AI Multilingual Word Search."""
 from __future__ import annotations
 
+import pygame
 import argparse
 import sys
 
@@ -73,6 +74,9 @@ def main() -> None:
         runner.run()
     else:
         # Launch Pygame GUI
+        # Initialize SDL from the entry point before importing GUI modules.
+        # Pydroid owns the Android activity context used by pygame.display.
+        pygame.init()
         from gui.app import WordSearchApp
 
         app = WordSearchApp()

@@ -37,7 +37,6 @@ class WordSearchApp:
     """Main application loop coordinating Pygame rendering, state machines, and assists."""
 
     def __init__(self) -> None:
-        pygame.init()
         pygame.display.set_caption("AI Multilingual Word Search")
 
         self.width = settings.get("screen_width", 1024)
