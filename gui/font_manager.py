@@ -21,13 +21,21 @@ except (ImportError, ModuleNotFoundError):
     # Some lightweight test shims expose freetype as an attribute only.
     pygame_freetype = getattr(pygame, "freetype", None)
 
-HAS_FREETYPE = pygame_freetype is not None
+ENABLE_PYGAME_FREETYPE = False # disable pygame.freetype for now due to rendering issues on some platforms
+HAS_FREETYPE = ENABLE_PYGAME_FREETYPE and pygame_freetype is not None
 if HAS_FREETYPE:
     try:
         pygame_freetype.init()
     except Exception:
         pygame_freetype = None
         HAS_FREETYPE = False
+
+try:
+    from pygame_emojis import load_emoji
+except (ImportError, ModuleNotFoundError):
+    load_emoji = None
+
+HAS_PYGAME_EMOJIS = load_emoji is not None
 
 EMOJI_FONT_PATH = Path(__file__).parent.parent / "assets" / "fonts" / "NotoColorEmoji.ttf"
 
@@ -192,7 +200,9 @@ class FontManager:
             has_tf = self.has_glyph(text_font, ch)
             has_ef = self.has_glyph(self._emoji_font, ch)
 
-            if has_ef and (not has_tf or self._is_emoji_or_symbol(cp)):
+            if not HAS_FREETYPE and HAS_PYGAME_EMOJIS and self._is_emoji_or_symbol(cp):
+                is_em = True
+            elif has_ef and (not has_tf or self._is_emoji_or_symbol(cp)):
                 is_em = True
             elif has_tf:
                 is_em = False
@@ -233,14 +243,17 @@ class FontManager:
         max_h = size
 
         for s, is_em in spans:
-            if is_em and self._emoji_font:
+            if is_em and (self._emoji_font or HAS_PYGAME_EMOJIS):
                 for ch in s:
                     try:
-                        if HAS_FREETYPE:
-                            raw_surf, _ = self._emoji_font.render(ch)
-                        else:
-                            raw_surf = self._emoji_font.render(ch, True, color)
                         em_size = int(size * settings.get("ui_scale", 1.05))
+                        if HAS_PYGAME_EMOJIS:
+                            raw_surf = load_emoji(ch, (em_size, em_size))
+                        else:
+                            if HAS_FREETYPE:
+                                raw_surf, _ = self._emoji_font.render(ch)
+                            else:
+                                raw_surf = self._emoji_font.render(ch, True, color)
                         em_surf = pygame.transform.smoothscale(raw_surf, (em_size, em_size))
                         surfaces.append(em_surf)
                         total_w += em_surf.get_width() + 1
