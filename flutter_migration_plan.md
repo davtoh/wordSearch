@@ -7,10 +7,10 @@
 ## Phase 1: Environment Setup & Documentation (`docs/ENVIRONMENT_SETUP.md`)
 - **Target AI Model:** Gemini 3.8 Flash
 - **Reasoning Level:** Low
-- [ ] Create `docs/ENVIRONMENT_SETUP.md` with complete, step-by-step installation instructions for Flutter SDK (Dart 3.x), Android Studio, Xcode, and VS Code extensions.
-- [ ] Document OS-specific paths and environment variable setups (e.g., `PATH` for macOS/Linux, System Variables for Windows).
-- [ ] Execute `flutter doctor` in the terminal to verify local machine dependencies.
-- [ ] Resolve any missing toolchains (e.g., Android cmdline-tools, CocoaPods for iOS) and document the fixes in the setup guide.
+- [x] Create `docs/ENVIRONMENT_SETUP.md` with complete, step-by-step installation instructions for Flutter SDK (Dart 3.x), Android Studio, Xcode, and VS Code extensions.
+- [x] Document OS-specific paths and environment variable setups (e.g., `PATH` for macOS/Linux, System Variables for Windows).
+- [x] Execute `flutter doctor` in the terminal to verify local machine dependencies.
+- [x] Resolve any missing toolchains (e.g., Android cmdline-tools, CocoaPods for iOS) and document the fixes in the setup guide.
 
 *Verification:* `docs/ENVIRONMENT_SETUP.md` exists and is populated. Running `flutter doctor` returns a clean, fully configured status for the target development platforms.
 

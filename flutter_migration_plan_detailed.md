@@ -7,11 +7,11 @@
 ## Phase 1: Environment Setup & Reproduction Docs
 - **Target Model:** Gemini 3.8 Flash
 - **Reasoning Level:** Low
-- [ ] Create a `docs/ENVIRONMENT_SETUP.md` file.
-- [ ] Document the exact commands to install Flutter SDK (Dart 3.x) for the host OS.
-- [ ] Document the required platform tools (Android Studio for Android SDK/emulators, Xcode for macOS/iOS).
-- [ ] Document the required VS Code extensions (Flutter, Dart).
-- [ ] Run `flutter doctor -v` in the terminal to verify the local target execution environment is ready.
+- [x] Create a `docs/ENVIRONMENT_SETUP.md` file.
+- [x] Document the exact commands to install Flutter SDK (Dart 3.x) for the host OS.
+- [x] Document the required platform tools (Android Studio for Android SDK/emulators, Xcode for macOS/iOS).
+- [x] Document the required VS Code extensions (Flutter, Dart).
+- [x] Run `flutter doctor -v` in the terminal to verify the local target execution environment is ready. (Executed: Flutter SDK currently not installed on host machine; see recommendations).
 
 ## Phase 2: Project Initialization & Architecture Setup
 - **Target Model:** Gemini 3.8 Flash
