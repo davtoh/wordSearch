@@ -34,10 +34,11 @@
 ## Phase 3: Pure Dart Word Search Domain Engine
 - **Target Model:** Claude Sonnet 4.6 (or Opus 4.6 for complex algorithms)
 - **Reasoning Level:** High
-- [ ] **Migrate Models:** Port `core/models.py` to Dart. Create `lib/core/models/word_entry.dart` and `puzzle.dart` using standard Dart classes or `freezed`.
-- [ ] **Migrate Enums:** Port `core/enums.py` to `lib/core/models/enums.dart` (Direction, Difficulty, ScriptType).
-- [ ] **Migrate Engine:** Port `core/grid_engine.py` and `core/scripts.py` to `lib/core/engine/grid_engine.dart`. Ensure the 8-way directional word placement and CJK/Unicode character pool logic is 100% framework-agnostic (zero Flutter UI imports).
-- [ ] **Write Tests:** Create `test/core/grid_engine_test.dart` to verify word placements, grid parsing, and boundary collision detection. Run `flutter test`.
+- [x] **Migrate Models:** Port `core/models.py` to Dart. Created `lib/core/models/word_entry.dart`, `puzzle.dart`, `puzzle_metadata.dart`, `assist_config.dart`, `player_profile.dart`, and `models.dart` (barrel) using pure Dart classes with Equatable (no freezed code generation).
+- [x] **Migrate Enums:** Port `core/enums.py` to `lib/core/models/enums.dart` (Direction, Difficulty, ScriptType, GameMode, GameStatus, HintTier, MasteryLevel, AppThemeMode) — Dart 3 enums with switch expressions and `fromValue`/`fromDelta` factory methods.
+- [x] **Migrate Engine:** Port `core/grid_engine.py` and `core/scripts.py` to `lib/core/engine/grid_engine.dart` and `lib/core/constants/scripts.dart`. 8-way directional word placement, CJK/Unicode character pools, script auto-detection, word normalisation — 100% framework-agnostic (zero Flutter UI imports).
+- [x] **Write Tests:** Created `test/core/grid_engine_test.dart` with 49 tests covering enums, models, script detection, grid generation, boundary collision, directional constraints, distractor shifting, JSON round-trips, and Equatable equality. All 49 tests pass (`flutter test test/core/grid_engine_test.dart`).
+
 
 ## Phase 4: State Management & Game State Logic
 - **Target Model:** Claude Sonnet 4.6

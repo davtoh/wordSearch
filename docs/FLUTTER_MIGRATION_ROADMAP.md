@@ -6,19 +6,22 @@ This document outlines the technical blueprint for migrating the **AI Multilingu
 
 ## 1. Architecture Mapping (Python → Dart)
 
-Because the Python engine was designed with strict decoupling (zero GUI dependency in `core/`, `learning/`, `assists/`, `telemetry/`, and `storage/`), the business logic maps 1:1 to Dart domain models and services.
+Because the Python engine was designed with strict decoupling (zero GUI dependency in `core/`, `learning/`, `assists/`, `telemetry/`, and `storage/`), the business logic maps 1:1 to Dart domain models and services using a Feature-First structure.
 
-| Python Component | Dart / Flutter Equivalent | Purpose |
-| :--- | :--- | :--- |
-| `core/models.py` | `lib/models/puzzle.dart`, `word_entry.dart` | Immutable data classes using `freezed` or `json_serializable` |
-| `core/grid_engine.py` | `lib/services/grid_engine.dart` | 8-way directional word placement & script distractor generation |
-| `core/scripts.py` | `lib/constants/scripts.dart` | Unicode & CJK character pools (Hiragana, Katakana, Kanji, Spanish) |
-| `core/game_state.py` | `lib/controllers/game_controller.dart` | State management using `Riverpod`, `Bloc`, or `ChangeNotifier` |
-| `assists/` | `lib/services/assists/` | Pluggable assist providers (Proximity, 6-Tier Hints, Inactivity detector) |
-| `learning/` | `lib/services/learning/` | Spaced repetition vocabulary mastery tracker & study deck |
-| `telemetry/` | `lib/services/telemetry_service.dart` | Focus-aware velocity, error rates, and local profile storage |
-| `storage/` | `lib/repositories/pack_repository.dart` | JSON asset loader and local cache via `shared_preferences` / `hive` |
-| `gui/views/board_view.py` | `lib/widgets/word_search_grid.dart` | Custom `GestureDetector` + `CustomPainter` with straight-line snapping |
+> For the live tracking of migrated components, design decisions, and synchronization steps with the Python codebase, see [docs/MIGRATION_LOG.md](MIGRATION_LOG.md).
+
+| Python Component | Dart / Flutter Path | Status | Purpose |
+| :--- | :--- | :--- | :--- |
+| `core/enums.py` | `word_search_app/lib/core/models/enums.dart` | ✅ Complete | Dart 3 enums with delta vectors, human-readable labels, and serialization |
+| `core/models.py` | `word_search_app/lib/core/models/` (`word_entry.dart`, `puzzle.dart`, etc.) | ✅ Complete | Immutable data classes using `Equatable`, `copyWith`, and JSON parsing |
+| `core/scripts.py` | `word_search_app/lib/core/constants/scripts.dart` | ✅ Complete | Unicode & CJK character pools (Hiragana, Katakana, Kanji, Spanish, Cyrillic) |
+| `core/grid_engine.py` | `word_search_app/lib/core/engine/grid_engine.dart` | ✅ Complete | 8-way directional word placement, density calculation, and distractor shifting |
+| `core/game_state.py` | `word_search_app/lib/features/word_search/application/game_provider.dart` | ⏳ Phase 4 | State management using `flutter_riverpod` (Notifier & State) |
+| `assists/` | `word_search_app/lib/features/word_search/application/assists_service.dart` | ⏳ Phase 4 | Pluggable assist providers (Proximity radar, 6-Tier Hints, Inactivity detector) |
+| `gui/views/board_view.py` | `word_search_app/lib/features/word_search/presentation/widgets/board_widget.dart` | ⏳ Phase 5 | Custom `GestureDetector` + `CustomPainter` with straight-line drag snapping |
+| `learning/` & `telemetry/` | `word_search_app/lib/features/learning/` & `telemetry/` | ⏳ Phase 6 | Spaced repetition vocabulary tracker and session telemetry |
+| `storage/` | `word_search_app/lib/features/word_search/data/pack_repository.dart` | ⏳ Phase 6 | JSON asset pack loader and local cache |
+| `ai/` (`topic_generator.py`) | `word_search_app/lib/features/ai/application/gemini_service.dart` | ⏳ Phase 7 | Gemini SDK client (`google_generative_ai`) for AI puzzle generation |
 
 ---
 
