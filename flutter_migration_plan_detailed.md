@@ -16,14 +16,14 @@
 ## Phase 2: Project Initialization & Architecture Setup
 - **Target Model:** Gemini 3.8 Flash
 - **Reasoning Level:** Low
-- [ ] Run `flutter create --org com.wordsearch word_search_app` in the root (or specified target directory).
-- [ ] Update `pubspec.yaml` to include core dependencies:
+- [x] Run `flutter create --org com.wordsearch word_search_app` in the root (or specified target directory).
+- [x] Update `pubspec.yaml` to include core dependencies:
   - `flutter_riverpod` (State Management)
   - `google_generative_ai` (Gemini API Integration)
   - `freezed_annotation` & `json_annotation` (Data modeling)
   - `audioplayers` & `flutter_launcher_icons`
-- [ ] Delete the default counter app code in `lib/main.dart`.
-- [ ] Establish the Feature-First directory structure:
+- [x] Delete the default counter app code in `lib/main.dart`.
+- [x] Establish the Feature-First directory structure:
   - `lib/core/models/`
   - `lib/core/engine/`
   - `lib/core/utils/`

@@ -19,14 +19,14 @@
 ## Phase 2: Project Initialization & Modular Folder Structure
 - **Target AI Model:** Gemini 3.8 Flash
 - **Reasoning Level:** Low / Medium
-- [ ] Initialize the new Flutter app using `flutter create --org com.wordsearch word_search_app`.
-- [ ] Configure `pubspec.yaml` with core architectural dependencies: state management (e.g., `flutter_riverpod` or `flutter_bloc`), equality (`equatable`), and functional utilities if needed (`fpdart`).
-- [ ] Establish a Feature-First directory structure:
+- [x] Initialize the new Flutter app using `flutter create --org com.wordsearch word_search_app`.
+- [x] Configure `pubspec.yaml` with core architectural dependencies: state management (e.g., `flutter_riverpod` or `flutter_bloc`), equality (`equatable`), and functional utilities if needed (`fpdart`).
+- [x] Establish a Feature-First directory structure:
   - `lib/core/` (Pure Dart domain logic, constants, base models)
   - `lib/features/word_search/domain/` (Entities, game rules)
   - `lib/features/word_search/application/` (State management, Riverpod/Bloc providers)
   - `lib/features/word_search/presentation/` (UI widgets, pages, layouts)
-- [ ] Clean up `lib/main.dart` to serve strictly as the bootstrap/entry point.
+- [x] Clean up `lib/main.dart` to serve strictly as the bootstrap/entry point.
 
 *Verification:* Project builds cleanly on a local target runner (`flutter run -d chrome` or native emulator) without syntax errors. Folder structure matches the defined architecture.
 
