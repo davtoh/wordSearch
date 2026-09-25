@@ -14,7 +14,7 @@ This document tracks the incremental migration of the Python/Pygame word search 
 | `core/grid_engine.py` | `word_search_app/lib/core/engine/grid_engine.dart` | ✅ Completed (Phase 3) | 8-way directional word placement, grid density & dimension solver, character fill, `shiftDistractorCells`. 100% framework-agnostic. |
 | `core/game_state.py` | `word_search_app/lib/features/word_search/` (`domain/game_state.dart`, `application/game_provider.dart`) | ✅ Completed (Phase 4) | Riverpod Notifier & immutable GameState holding active session state, forward/reverse drag line calculations, timer loops, and assists. |
 | `assists/` | `word_search_app/lib/features/word_search/application/assists_service.dart` | ✅ Completed (Phase 4) | Pluggable assist mechanics: 6-tier progressive hint resolver, proximity radar with hot/cold temperatures, auto stall detector, and emergency time bonuses. |
-| `gui/` (Views & Pygame UI) | `word_search_app/lib/features/word_search/presentation/` | ⏳ Pending (Phase 5/6) | Adaptive responsive UI (`LayoutBuilder`), `CustomPainter` board widget with touch drag snapping, soft keyboard prevention (`FocusScope.unfocus`). |
+| `gui/` (Views & Pygame UI) | `word_search_app/lib/features/word_search/presentation/` (`game_screen.dart`, `widgets/board_widget.dart`) | ✅ Completed (Phase 5) | Responsive UI (`LayoutBuilder` switching between NavigationBar on mobile and NavigationRail on wide desktop/tablets), high-performance `CustomPainter` `BoardWidget` with drag-selection pill highlights and hint glows, soft keyboard prevention (`FocusScope.unfocus`), and mobile portrait lock. |
 | `learning/` & `telemetry/` | `word_search_app/lib/features/learning/` & `telemetry/` | ⏳ Pending (Phase 6/7) | Spaced repetition vocabulary tracker and session telemetry metrics. |
 | `storage/` | `word_search_app/lib/features/word_search/data/pack_repository.dart` | ⏳ Pending (Phase 6/7) | Local JSON pack loading and persistent player profile cache. |
 | `ai/` (`topic_generator.py`) | `word_search_app/lib/features/ai/application/gemini_service.dart` | ⏳ Pending (Phase 7) | Official `google_generative_ai` SDK integration for generating custom multilingual word packs. |
@@ -63,6 +63,24 @@ This document tracks the incremental migration of the Python/Pygame word search 
     - `test/features/word_search/game_provider_test.dart` (drag selection, forward/reverse matching, line interpolation, timers, countdown timeout, pause, surrender).
     - `test/features/word_search/assists_service_test.dart` (progressive hints 1-6, proximity radar, stall alerts, time boosts).
   - Verification: 86/86 tests passing, `flutter analyze` clean with 0 issues.
+
+### Phase 5: Responsive UI Architecture & Focus Management
+- **Date Completed:** 2026-09-25
+- **Changes:**
+  - Implemented `lib/features/word_search/presentation/widgets/board_widget.dart`:
+    - High-performance `CustomPainter` rendering background card, grid cell boxes, multi-colored translucent pills for found words, golden pulsing hint highlights, and active drag selection rubber-bands.
+    - Touch and mouse pan/tap coordinate resolution to grid (row, col) with bounds clamping.
+    - Added automatic soft keyboard dismissal on board interactions.
+  - Implemented `lib/features/word_search/presentation/game_screen.dart`:
+    - Responsive layout with `LayoutBuilder`: Mobile vertical stack with bottom `NavigationBar` vs Wide desktop/tablet layout with side `NavigationRail` and scrollable Word Bank sidebar.
+    - Header HUD with time formatted as `MM:SS`, found word counters, and pause/resume button.
+    - Proximity radar and auto stall alert pill with overflow-protected flexible typography.
+    - Confirmation dialogs for surrender / give up and hint SnackBar triggers.
+  - Configured `lib/main.dart`:
+    - Mobile phone orientation locking to portrait via `SystemChrome.setPreferredOrientations`.
+    - Wrapped root in `ProviderScope` ensuring standalone app and widget test compatibility.
+  - Added widget tests in `test/features/word_search/presentation/game_screen_test.dart` (narrow/wide layouts, gestures, keyboard unfocus, hint snacks).
+  - Verification: 91/91 tests passing, `flutter analyze` clean with 0 issues.
 
 ---
 

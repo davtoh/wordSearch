@@ -52,10 +52,11 @@
 ## Phase 5: Responsive UI Architecture & Focus Management
 - **Target Model:** Claude Sonnet 4.6
 - **Reasoning Level:** Medium
-- [ ] **Base Layout:** Create `lib/features/word_search/presentation/game_screen.dart`. Use `LayoutBuilder` to render a `NavigationBar` + vertical stack on narrow screens, and a `NavigationRail` + side-by-side grid on wide screens.
-- [ ] **Orientation:** In `main.dart`, use `SystemChrome.setPreferredOrientations` to lock mobile devices to Portrait, while allowing flexible orientations on tablets/desktop.
-- [ ] **Focus Management:** Wrap the main scaffold body in a `GestureDetector` that calls `FocusScope.of(context).unfocus()` to ensure soft keyboards never pop up unless the AI Prompt text field is explicitly tapped.
-- [ ] **Grid Painter:** Implement `lib/features/word_search/presentation/widgets/board_widget.dart` using a `CustomPainter` to draw the grid, selection pill highlights, and drag lines smoothly.
+- [x] **Base Layout:** Create `lib/features/word_search/presentation/game_screen.dart`. Use `LayoutBuilder` to render a `NavigationBar` + vertical stack on narrow screens, and a `NavigationRail` + side-by-side grid on wide screens.
+- [x] **Orientation:** In `main.dart`, use `SystemChrome.setPreferredOrientations` to lock mobile devices to Portrait, while allowing flexible orientations on tablets/desktop.
+- [x] **Focus Management:** Wrap the main scaffold body in a `GestureDetector` that calls `FocusScope.of(context).unfocus()` to ensure soft keyboards never pop up unless the AI Prompt text field is explicitly tapped.
+- [x] **Grid Painter:** Implement `lib/features/word_search/presentation/widgets/board_widget.dart` using a `CustomPainter` to draw the grid, selection pill highlights, and drag lines smoothly.
+
 
 ## Phase 6: Accessibility (a11y) & Touch Target Polish
 - **Target Model:** Claude Sonnet 4.6

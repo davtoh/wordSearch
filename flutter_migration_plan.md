@@ -45,19 +45,31 @@
 
 ---
 
-## Phase 4: Responsive UI Architecture & Focus/Orientation Controls
+## Phase 4: State Management & Game State Logic
+- **Target AI Model:** Claude Sonnet 4.6
+- **Reasoning Level:** Medium
+- [x] Connect the pure Dart domain logic to the application layer using Riverpod (`lib/features/word_search/application/game_provider.dart` & `domain/game_state.dart`).
+- [x] Port the pluggable assist mechanics (6-tier progressive hints, proximity radar, auto stall detector, time bonus) into `lib/features/word_search/application/assists_service.dart`.
+- [x] Implement timer loops for active elapsed time and Timed Attack countdowns with timeout handling.
+- [x] Implement drag selection line interpolation and forward/reverse word validation.
+
+*Verification:* Unit test suite in `test/features/word_search/` passes 100% (36 tests). `flutter analyze` reports No issues found.
+
+---
+
+## Phase 5: Responsive UI Architecture & Focus/Orientation Controls
 - **Target AI Model:** Claude Sonnet 4.6
 - **Reasoning Level:** Medium / High
-- [ ] Implement `LayoutBuilder` and `MediaQuery` wrappers to build adaptive screens that reflow dynamically (e.g., `NavigationRail` + side-by-side grids on Desktop/Web; `NavigationBar` + vertical stacks on Mobile).
-- [ ] Use `Wrap` and `Flex` layouts to prevent `RenderFlex` pixel overflow errors on small screens.
-- [ ] Implement strict `FocusNode` management. Use `GestureDetector` or `InkWell` for grid interactions and explicitly drop/unfocus text nodes so virtual soft keyboards do not pop up unexpectedly during gameplay.
-- [ ] Configure orientation handling using `SystemChrome.setPreferredOrientations` to lock mobile devices to Portrait, while leaving tablet/web/desktop orientations flexible.
+- [ ] Implement `LayoutBuilder` and `MediaQuery` wrappers in `lib/features/word_search/presentation/game_screen.dart` to build adaptive screens (e.g., `NavigationRail` + side-by-side grids on Desktop/Web; `NavigationBar` + vertical stacks on Mobile).
+- [ ] Implement `lib/features/word_search/presentation/widgets/board_widget.dart` using a `CustomPainter` to draw the grid cells, selection pill highlights, drag line, and hint glows smoothly.
+- [ ] Implement strict `FocusNode` management: wrap the scaffold in a `GestureDetector` that calls `FocusScope.of(context).unfocus()` so virtual soft keyboards do not pop up during gameplay.
+- [ ] Configure orientation handling in `lib/main.dart` using `SystemChrome.setPreferredOrientations` to lock mobile devices to Portrait, while leaving tablet/web/desktop orientations flexible.
 
 *Verification:* The app UI reflows cleanly without pixel overflow warnings across dynamic window resizes. Tapping grid cells does not trigger the OS virtual keyboard.
 
 ---
 
-## Phase 5: Accessibility (a11y) & Interactive UX Polish
+## Phase 6: Accessibility (a11y) & Interactive UX Polish
 - **Target AI Model:** Claude Sonnet 4.6
 - **Reasoning Level:** Medium
 - [ ] Enforce a minimum touch target size of 48x48 dp across all interactive grid cells, menu buttons, and HUD controls.
@@ -69,21 +81,10 @@
 
 ---
 
-## Phase 6: State Management Integration & Module Expansion Hooks
-- **Target AI Model:** Claude Sonnet 4.6
-- **Reasoning Level:** Medium
-- [ ] Connect the pure Dart domain logic to the UI layer using explicit reactive state providers (Riverpod or Bloc).
-- [ ] Port the pluggable assist mechanics (6-tier progressive hints, proximity radar) and vocabulary learning tracker from the Python codebase (`project_context.md`) into the new state architecture.
-- [ ] Implement lifecycle hooks (`WidgetsBindingObserver`) to pause timers and save game state automatically when the app is backgrounded or window focus is lost.
-- [ ] Define abstract repository interfaces for loading JSON puzzle packs, allowing easy swapping of local asset loaders vs. future remote API fetchers.
-
-*Verification:* The UI reacts instantly to state changes. Changing tabs, minimizing the app, or rotating the screen retains the active game selections and timer states.
-
----
-
-## Phase 7: Testing, Verification & Multi-Platform Build Check
+## Phase 7: AI Integration, Testing & Multi-Platform Build Check
 - **Target AI Model:** Gemini 3.8 Flash
 - **Reasoning Level:** Low / Medium
+- [ ] Port `ai/topic_generator.py` to `lib/features/ai/application/gemini_service.dart` using the `google_generative_ai` package to fetch custom JSON topics.
 - [ ] Write widget interaction tests in `test/features/word_search/presentation/` to simulate drag-selections and button taps.
 - [ ] Execute `flutter test` to ensure 100% pass rate on all unit and widget tests.
 - [ ] Verify build targets across available platforms:
