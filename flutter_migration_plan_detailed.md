@@ -43,10 +43,11 @@
 ## Phase 4: State Management & Game State Logic
 - **Target Model:** Claude Sonnet 4.6
 - **Reasoning Level:** Medium
-- [ ] **Migrate Game State:** Port `core/game_state.py` to a Riverpod Notifier at `lib/features/word_search/application/game_provider.dart`.
-- [ ] **Implement Timers:** Add the timed attack countdown and active elapsed time tracking to the provider state.
-- [ ] **Selection Logic:** Port the line-interpolation logic to validate drag selections (forward and reverse) into the provider.
-- [ ] **Migrate Assists:** Port the proximity radar and progressive hint mechanics from `assists/` into `lib/features/word_search/application/assists_service.dart`.
+- [x] **Migrate Game State:** Port `core/game_state.py` to a Riverpod Notifier at `lib/features/word_search/application/game_provider.dart` and domain model at `lib/features/word_search/domain/game_state.dart`.
+- [x] **Implement Timers:** Add the timed attack countdown and active elapsed time tracking to the provider state with periodic and tick step loops.
+- [x] **Selection Logic:** Port the line-interpolation logic to validate drag selections (forward and reverse) into the provider (`startSelection`, `updateSelection`, `confirmSelection`, `checkSelection`).
+- [x] **Migrate Assists:** Port the proximity radar, 6-tier progressive hint mechanics, auto stall detector, and emergency time bonuses from `assists/` into `lib/features/word_search/application/assists_service.dart`.
+
 
 ## Phase 5: Responsive UI Architecture & Focus Management
 - **Target Model:** Claude Sonnet 4.6

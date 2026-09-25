@@ -12,8 +12,8 @@ This document tracks the incremental migration of the Python/Pygame word search 
 | `core/models.py` | `word_search_app/lib/core/models/` (`word_entry.dart`, `puzzle.dart`, `puzzle_metadata.dart`, `assist_config.dart`, `player_profile.dart`, `models.dart`) | ✅ Completed (Phase 3) | Pure Dart immutable classes with `Equatable`, `copyWith`, and JSON serialization. Zero code generation overhead. |
 | `core/scripts.py` | `word_search_app/lib/core/constants/scripts.dart` | ✅ Completed (Phase 3) | All character pools (Latin, Spanish, Hiragana, Katakana, Kanji, Cyrillic), rune-based Unicode validation, `detectScript`, `normalizeWordForPuzzle`. |
 | `core/grid_engine.py` | `word_search_app/lib/core/engine/grid_engine.dart` | ✅ Completed (Phase 3) | 8-way directional word placement, grid density & dimension solver, character fill, `shiftDistractorCells`. 100% framework-agnostic. |
-| `core/game_state.py` | `word_search_app/lib/features/word_search/application/game_provider.dart` | ⏳ Pending (Phase 4) | Riverpod Notifier holding active session state, selection line calculations, timer countdown, and assist tracking. |
-| `assists/` | `word_search_app/lib/features/word_search/application/assists_service.dart` | ⏳ Pending (Phase 4) | Pluggable assist mechanics: 6-tier progressive hint resolver, proximity radar, time bonuses, stall detection. |
+| `core/game_state.py` | `word_search_app/lib/features/word_search/` (`domain/game_state.dart`, `application/game_provider.dart`) | ✅ Completed (Phase 4) | Riverpod Notifier & immutable GameState holding active session state, forward/reverse drag line calculations, timer loops, and assists. |
+| `assists/` | `word_search_app/lib/features/word_search/application/assists_service.dart` | ✅ Completed (Phase 4) | Pluggable assist mechanics: 6-tier progressive hint resolver, proximity radar with hot/cold temperatures, auto stall detector, and emergency time bonuses. |
 | `gui/` (Views & Pygame UI) | `word_search_app/lib/features/word_search/presentation/` | ⏳ Pending (Phase 5/6) | Adaptive responsive UI (`LayoutBuilder`), `CustomPainter` board widget with touch drag snapping, soft keyboard prevention (`FocusScope.unfocus`). |
 | `learning/` & `telemetry/` | `word_search_app/lib/features/learning/` & `telemetry/` | ⏳ Pending (Phase 6/7) | Spaced repetition vocabulary tracker and session telemetry metrics. |
 | `storage/` | `word_search_app/lib/features/word_search/data/pack_repository.dart` | ⏳ Pending (Phase 6/7) | Local JSON pack loading and persistent player profile cache. |
@@ -48,6 +48,21 @@ This document tracks the incremental migration of the Python/Pygame word search 
   - Decided on **Pure Dart with Equatable**: avoids build runner code generation overhead for core data models, offering high testability and clean domain code.
   - Zero framework imports (`package:flutter/material.dart` etc.) in `lib/core/`.
   - Added test suite: `test/core/grid_engine_test.dart` containing 49 comprehensive unit tests (all passing).
+
+### Phase 4: State Management & Game State Logic
+- **Date Completed:** 2026-09-24
+- **Changes:**
+  - Ported `core/game_state.py` -> `lib/features/word_search/domain/game_state.dart` (immutable state model, line interpolation, word distance calculation).
+  - Created `lib/features/word_search/application/game_provider.dart` (`GameNotifier` with `Notifier<GameState>`, drag selection handlers, timer loop with tick step, pause/resume, and give-up).
+  - Ported `assists/` -> `lib/features/word_search/application/assists_service.dart`:
+    - 6-Tier progressive hint provider (Clue -> Word Name -> First Letter -> Orientation -> Start Coord -> Full Glow).
+    - Proximity radar provider (Hot/Cold temperature feedback with throttle and caching).
+    - Auto stall detector (Player inactivity trigger after configurable threshold).
+    - Time bonus provider (Word found bonuses and +30s emergency time boosts).
+  - Added unit test suites:
+    - `test/features/word_search/game_provider_test.dart` (drag selection, forward/reverse matching, line interpolation, timers, countdown timeout, pause, surrender).
+    - `test/features/word_search/assists_service_test.dart` (progressive hints 1-6, proximity radar, stall alerts, time boosts).
+  - Verification: 86/86 tests passing, `flutter analyze` clean with 0 issues.
 
 ---
 
