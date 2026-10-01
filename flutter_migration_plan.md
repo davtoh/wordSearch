@@ -60,10 +60,10 @@
 ## Phase 5: Responsive UI Architecture & Focus/Orientation Controls
 - **Target AI Model:** Claude Sonnet 4.6
 - **Reasoning Level:** Medium / High
-- [ ] Implement `LayoutBuilder` and `MediaQuery` wrappers in `lib/features/word_search/presentation/game_screen.dart` to build adaptive screens (e.g., `NavigationRail` + side-by-side grids on Desktop/Web; `NavigationBar` + vertical stacks on Mobile).
-- [ ] Implement `lib/features/word_search/presentation/widgets/board_widget.dart` using a `CustomPainter` to draw the grid cells, selection pill highlights, drag line, and hint glows smoothly.
-- [ ] Implement strict `FocusNode` management: wrap the scaffold in a `GestureDetector` that calls `FocusScope.of(context).unfocus()` so virtual soft keyboards do not pop up during gameplay.
-- [ ] Configure orientation handling in `lib/main.dart` using `SystemChrome.setPreferredOrientations` to lock mobile devices to Portrait, while leaving tablet/web/desktop orientations flexible.
+- [x] Implement `LayoutBuilder` and `MediaQuery` wrappers in `lib/features/word_search/presentation/game_screen.dart` to build adaptive screens (e.g., `NavigationRail` + side-by-side grids on Desktop/Web; `NavigationBar` + vertical stacks on Mobile).
+- [x] Implement `lib/features/word_search/presentation/widgets/board_widget.dart` using a `CustomPainter` to draw the grid cells, selection pill highlights, drag line, and hint glows smoothly.
+- [x] Implement strict `FocusNode` management: wrap the scaffold in a `GestureDetector` that calls `FocusScope.of(context).unfocus()` so virtual soft keyboards do not pop up during gameplay.
+- [x] Configure orientation handling in `lib/main.dart` using `SystemChrome.setPreferredOrientations` to lock mobile devices to Portrait, while leaving tablet/web/desktop orientations flexible.
 
 *Verification:* The app UI reflows cleanly without pixel overflow warnings across dynamic window resizes. Tapping grid cells does not trigger the OS virtual keyboard.
 
@@ -72,10 +72,10 @@
 ## Phase 6: Accessibility (a11y) & Interactive UX Polish
 - **Target AI Model:** Claude Sonnet 4.6
 - **Reasoning Level:** Medium
-- [ ] Enforce a minimum touch target size of 48x48 dp across all interactive grid cells, menu buttons, and HUD controls.
-- [ ] Wrap all critical interactive components (especially the puzzle grid cells and target words) in `Semantics` widgets with clear accessibility labels (e.g., `label: "Letter A, Row 2, Column 3"`).
-- [ ] Support dynamic OS text scaling by using responsive typography that scales without breaking fixed-height containers.
-- [ ] Verify that UI color palettes meet WCAG AA contrast standards for both Light and Dark themes.
+- [x] Enforce a minimum touch target size of 48x48 dp across all interactive grid cells, menu buttons, and HUD controls.
+- [x] Wrap all critical interactive components (especially the puzzle grid cells and target words) in `Semantics` widgets with clear accessibility labels (e.g., `label: "Letter A, Row 2, Column 3"`).
+- [x] Support dynamic OS text scaling by using responsive typography that scales without breaking fixed-height containers.
+- [x] Verify that UI color palettes meet WCAG AA contrast standards for both Light and Dark themes.
 
 *Verification:* OS screen reader tools (TalkBack / VoiceOver) correctly pronounce grid positions and button states.
 

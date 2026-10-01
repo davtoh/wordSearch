@@ -31,29 +31,41 @@ class GameScreen extends ConsumerWidget {
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Word Search App'),
+          title: const FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text('Word Search App'),
+          ),
           centerTitle: false,
           actions: [
             // Mode Switcher / Indicator
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: Chip(
-                avatar: Icon(
-                  gameState.mode == GameMode.timedAttack
-                      ? Icons.timer
-                      : Icons.spa,
-                  size: 16,
-                  color: theme.colorScheme.primary,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width * 0.45,
                 ),
-                label: Text(
-                  gameState.mode == GameMode.timedAttack
-                      ? 'Timed: ${_formatTime(gameState.timeRemaining)}'
-                      : 'Casual: ${_formatTime(gameState.totalElapsedSeconds)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Chip(
+                    avatar: Icon(
+                      gameState.mode == GameMode.timedAttack
+                          ? Icons.timer
+                          : Icons.spa,
+                      size: 16,
+                      color: theme.colorScheme.primary,
+                    ),
+                    label: Text(
+                      gameState.mode == GameMode.timedAttack
+                          ? 'Timed: ${_formatTime(gameState.timeRemaining)}'
+                          : 'Casual: ${_formatTime(gameState.totalElapsedSeconds)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
               ),
             ),
             IconButton(
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               icon: Icon(
                 gameState.status == GameStatus.paused
                     ? Icons.play_arrow
@@ -223,19 +235,28 @@ class GameScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.check_circle_outline, size: 20),
-              const SizedBox(width: 6),
-              Text(
-                'Found: $foundCount / $totalCount',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+      child: Semantics(
+        container: true,
+        label: 'Game HUD: $foundCount of $totalCount words found, ${(state.progress * 100).toInt()}% completed',
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          runSpacing: 4.0,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.check_circle_outline, size: 20),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Found: $foundCount / $totalCount',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
           if (state.status == GameStatus.won)
             const Text(
               '🎉 Completed!',
@@ -269,6 +290,7 @@ class GameScreen extends ConsumerWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -333,100 +355,135 @@ class GameScreen extends ConsumerWidget {
     required bool isHorizontal,
   }) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final foundTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     if (isHorizontal) {
-      return Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: theme.colorScheme.outlineVariant,
-              width: 1,
+      final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+      final bankHeight = (80.0 * textScale).clamp(80.0, 160.0);
+
+      return Semantics(
+        container: true,
+        label: 'Word Bank, ${state.puzzle.words.length} words to find',
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            border: Border(
+              top: BorderSide(
+                color: theme.colorScheme.outlineVariant,
+                width: 1,
+              ),
             ),
           ),
-        ),
-        child: SizedBox(
-          height: 80,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: state.puzzle.words.map((w) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: FilterChip(
-                    label: Text(
-                      w.word,
-                      style: TextStyle(
-                        decoration:
-                            w.found ? TextDecoration.lineThrough : null,
-                        color: w.found ? Colors.grey : null,
-                        fontWeight: FontWeight.w600,
+          child: SizedBox(
+            height: bankHeight,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: state.puzzle.words.map((w) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Semantics(
+                      button: true,
+                      label:
+                          'Word ${w.word}, ${w.found ? "already found" : "not found"}${w.clue != null ? ". Clue: ${w.clue}" : ""}',
+                      child: FilterChip(
+                        materialTapTargetSize: MaterialTapTargetSize.padded,
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            w.word,
+                            style: TextStyle(
+                              decoration:
+                                  w.found ? TextDecoration.lineThrough : null,
+                              color: w.found ? foundTextColor : null,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        selected: w.found,
+                        onSelected: (_) => _handleRequestHint(
+                          context,
+                          notifier,
+                          targetWord: w.word,
+                        ),
                       ),
                     ),
-                    selected: w.found,
-                    onSelected: (_) =>
-                        _handleRequestHint(context, notifier, targetWord: w.word),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),
       );
     } else {
       // Vertical list on desktop/wide layout
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Word Bank (${state.puzzle.words.length})',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+      return Semantics(
+        container: true,
+        label: 'Word Bank, ${state.puzzle.words.length} words to find',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Word Bank (${state.puzzle.words.length})',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: state.puzzle.words.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final w = state.puzzle.words[index];
-                return ListTile(
-                  leading: Icon(
-                    w.found
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    color: w.found ? Colors.green : Colors.grey,
-                  ),
-                  title: Text(
-                    w.word,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      decoration: w.found ? TextDecoration.lineThrough : null,
-                      color: w.found ? Colors.grey : null,
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemCount: state.puzzle.words.length,
+                separatorBuilder: (_, _) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final w = state.puzzle.words[index];
+                  return Semantics(
+                    label:
+                        'Word ${w.word}, ${w.found ? "already found" : "not found"}${w.clue != null ? ". Clue: ${w.clue}" : ""}',
+                    child: ListTile(
+                      minVerticalPadding: 14.0, // Ensures >= 48dp touch target
+                      leading: Icon(
+                        w.found
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        color: w.found ? Colors.green : Colors.grey,
+                      ),
+                      title: Text(
+                        w.word,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration:
+                              w.found ? TextDecoration.lineThrough : null,
+                          color: w.found ? foundTextColor : null,
+                        ),
+                      ),
+                      subtitle: w.clue != null ? Text(w.clue!) : null,
+                      trailing: !w.found
+                          ? IconButton(
+                              constraints: const BoxConstraints(
+                                minWidth: 48,
+                                minHeight: 48,
+                              ),
+                              icon: const Icon(Icons.help_outline, size: 22),
+                              tooltip: 'Get hint for ${w.word}',
+                              onPressed: () => _handleRequestHint(
+                                context,
+                                notifier,
+                                targetWord: w.word,
+                              ),
+                            )
+                          : null,
                     ),
-                  ),
-                  subtitle: w.clue != null ? Text(w.clue!) : null,
-                  trailing: !w.found
-                      ? IconButton(
-                          icon: const Icon(Icons.help_outline, size: 20),
-                          tooltip: 'Get hint for ${w.word}',
-                          onPressed: () => _handleRequestHint(
-                            context,
-                            notifier,
-                            targetWord: w.word,
-                          ),
-                        )
-                      : null,
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
   }

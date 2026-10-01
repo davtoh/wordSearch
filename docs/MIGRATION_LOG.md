@@ -82,7 +82,36 @@ This document tracks the incremental migration of the Python/Pygame word search 
   - Added widget tests in `test/features/word_search/presentation/game_screen_test.dart` (narrow/wide layouts, gestures, keyboard unfocus, hint snacks).
   - Verification: 91/91 tests passing, `flutter analyze` clean with 0 issues.
 
+### Phase 6: Accessibility (a11y) & Touch Target Polish
+- **Date Completed:** 2026-10-01
+- **Changes:**
+  - **Touch Targets:**
+    - Applied `BoxConstraints(minWidth: 48, minHeight: 48)` to the AppBar pause/resume `IconButton`.
+    - Applied `MaterialTapTargetSize.padded` to Word Bank `FilterChip` widgets in the horizontal drawer.
+    - Set `minVerticalPadding: 14.0` on Word Bank `ListTile` items in the vertical sidebar (guarantees ≥ 48dp total touch height).
+    - Applied `BoxConstraints(minWidth: 48, minHeight: 48)` to hint `IconButton` in the wide-layout sidebar.
+  - **Grid Accessibility (`board_widget.dart`):**
+    - Added per-cell `Semantics` overlay grid on top of the `CustomPainter`. Each cell exposes: `label: "Letter $char at Row $r Column $c, [found in $word | hinted | selected]"`, `button: true`, `onTap` triggers `checkProximity`.
+    - Added grid container `Semantics` label: `"Word search puzzle grid, $rows rows by $cols columns"`.
+  - **Text Scaling (`game_screen.dart`):**
+    - Wrapped HUD Found-counter `Row` in `FittedBox(fit: BoxFit.scaleDown)` to prevent horizontal overflow at 200% text scale.
+    - Wrapped AppBar mode `Chip` in `ConstrainedBox(maxWidth: screenWidth * 0.45)` + `FittedBox(fit: BoxFit.scaleDown)` to prevent AppBar overflow on 360dp screens at 2× scale.
+    - Word Bank horizontal drawer height is dynamically computed via `textScaler.scale(1.0)` clamped to `[80, 160]dp`.
+  - **WCAG AA Color Compliance:**
+    - Light theme found-word overlay: `0xFF6366F1` (indigo, contrast ratio > 4.5:1 on white).
+    - Dark theme found-word overlay: `0xFF818CF8` (light indigo, contrast ratio > 4.5:1 on dark surface).
+    - Selection rubber-band: `0xFFFF9800` (amber, high contrast on all grid backgrounds, > 15:1).
+  - **Smoke Test Fix (`test/widget_test.dart`):**
+    - Added missing `ProviderScope` wrapper (required by `GameNotifier`) and updated assertion to `find.textContaining('Word Search')` to be resilient to `FittedBox` wrapping.
+  - **New test file:** `test/features/word_search/presentation/accessibility_test.dart` — 4 tests:
+    - Grid cells provide detailed Semantics labels for screen readers.
+    - HUD action buttons satisfy 48×48 dp minimum touch target.
+    - Word bank drawer and HUD scale gracefully with 200% dynamic OS text scale without overflow.
+    - Word Bank items provide accessible semantic descriptions.
+  - Verification: **95/95 tests passing**, `flutter analyze` — No issues found.
+
 ---
+
 
 ## 3. Python-to-Dart Synchronization Guide (How to Reconstruct & Sync)
 

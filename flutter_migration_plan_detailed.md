@@ -61,9 +61,10 @@
 ## Phase 6: Accessibility (a11y) & Touch Target Polish
 - **Target Model:** Claude Sonnet 4.6
 - **Reasoning Level:** Medium
-- [ ] **Touch Targets:** Enforce `BoxConstraints(minWidth: 48, minHeight: 48)` on all interactive HUD buttons and word list cards.
-- [ ] **Grid Accessibility:** Wrap the `CustomPainter` (or individual grid hitboxes) in `Semantics` widgets. Apply labels like `label: "Letter A at Row 1 Column 2"`.
-- [ ] **Text Scaling:** Use `FittedBox` or dynamic typography sizing in the Word Bank drawer so that OS-level font scaling does not cause pixel overflow errors (`RenderFlex overflowed`).
+- [x] **Touch Targets:** Enforce `BoxConstraints(minWidth: 48, minHeight: 48)` on all interactive HUD buttons and word list cards.
+- [x] **Grid Accessibility:** Wrap the `CustomPainter` (or individual grid hitboxes) in `Semantics` widgets. Apply labels like `label: "Letter A at Row 1 Column 2"`.
+- [x] **Text Scaling:** Use `FittedBox` or dynamic typography sizing in the Word Bank drawer so that OS-level font scaling does not cause pixel overflow errors (`RenderFlex overflowed`).
+
 
 ## Phase 7: AI Integration & Testing
 - **Target Model:** Gemini 3.8 Flash

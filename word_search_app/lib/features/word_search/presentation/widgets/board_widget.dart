@@ -49,6 +49,26 @@ class BoardWidget extends StatelessWidget {
     return (r, c);
   }
 
+  String _getCellSemanticLabel(int r, int c) {
+    final char = gameState.puzzle.grid[r][c];
+    final isFound = gameState.isCoordFound((r, c));
+    final isHinted = gameState.isCoordHinted((r, c));
+    final isSelected = gameState.isCoordSelected((r, c));
+
+    final buffer = StringBuffer('Letter $char at Row ${r + 1} Column ${c + 1}');
+    if (isFound) {
+      final word = gameState.foundCoordsMap[(r, c)];
+      buffer.write(word != null ? ', found in $word' : ', found');
+    }
+    if (isHinted) {
+      buffer.write(', hinted');
+    }
+    if (isSelected) {
+      buffer.write(', selected');
+    }
+    return buffer.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -56,39 +76,85 @@ class BoardWidget extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final rows = gameState.puzzle.rows;
+        final cols = gameState.puzzle.cols;
+
         final availSide = min(constraints.maxWidth, constraints.maxHeight);
         final size = Size(availSide, availSide);
 
-        return Center(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onPanStart: (details) {
-              FocusScope.of(context).unfocus();
-              final cell = _getCellAtPosition(details.localPosition, size);
-              if (cell != null) {
-                onCellDragStart?.call(cell);
-              }
-            },
-            onPanUpdate: (details) {
-              final cell = _getCellAtPosition(details.localPosition, size);
-              if (cell != null) {
-                onCellDragUpdate?.call(cell);
-              }
-            },
-            onPanEnd: (_) => onCellDragEnd?.call(),
-            onTapDown: (details) {
-              FocusScope.of(context).unfocus();
-              final cell = _getCellAtPosition(details.localPosition, size);
-              if (cell != null) {
-                onCellTap?.call(cell);
-              }
-            },
-            child: CustomPaint(
-              size: size,
-              painter: _BoardPainter(
-                gameState: gameState,
-                isDark: isDark,
-                colorScheme: theme.colorScheme,
+        const padding = 8.0;
+        final availW = size.width - 2 * padding;
+        final availH = size.height - 2 * padding;
+        final cellSize = rows > 0 && cols > 0 ? min(availW / cols, availH / rows) : 0.0;
+        final gridW = cellSize * cols;
+        final gridH = cellSize * rows;
+        final originX = (size.width - gridW) / 2;
+        final originY = (size.height - gridH) / 2;
+
+        return Semantics(
+          container: true,
+          label: 'Word search puzzle grid, $rows rows by $cols columns',
+          child: Center(
+            child: SizedBox(
+              width: size.width,
+              height: size.height,
+              child: Stack(
+                children: [
+                  // 1. Accessibility semantics layer for screen readers (VoiceOver / TalkBack)
+                  for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < cols; c++)
+                      Positioned(
+                        left: originX + c * cellSize,
+                        top: originY + r * cellSize,
+                        width: cellSize,
+                        height: cellSize,
+                        child: Semantics(
+                          button: true,
+                          label: _getCellSemanticLabel(r, c),
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
+                            onCellTap?.call((r, c));
+                          },
+                          child: const SizedBox.expand(),
+                        ),
+                      ),
+
+                  // 2. Interactive visual painter and touch gesture detector
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onPanStart: (details) {
+                        FocusScope.of(context).unfocus();
+                        final cell = _getCellAtPosition(details.localPosition, size);
+                        if (cell != null) {
+                          onCellDragStart?.call(cell);
+                        }
+                      },
+                      onPanUpdate: (details) {
+                        final cell = _getCellAtPosition(details.localPosition, size);
+                        if (cell != null) {
+                          onCellDragUpdate?.call(cell);
+                        }
+                      },
+                      onPanEnd: (_) => onCellDragEnd?.call(),
+                      onTapDown: (details) {
+                        FocusScope.of(context).unfocus();
+                        final cell = _getCellAtPosition(details.localPosition, size);
+                        if (cell != null) {
+                          onCellTap?.call(cell);
+                        }
+                      },
+                      child: CustomPaint(
+                        size: size,
+                        painter: _BoardPainter(
+                          gameState: gameState,
+                          isDark: isDark,
+                          colorScheme: theme.colorScheme,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
