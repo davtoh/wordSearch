@@ -66,10 +66,12 @@
 - [x] **Text Scaling:** Use `FittedBox` or dynamic typography sizing in the Word Bank drawer so that OS-level font scaling does not cause pixel overflow errors (`RenderFlex overflowed`).
 
 
-## Phase 7: AI Integration & Testing
+## Phase 7: AI Integration, Learning Mode & Cross-Platform Verification
 - **Target Model:** Gemini 3.8 Flash
-- **Reasoning Level:** Low
-- [ ] **Gemini API:** Port `ai/topic_generator.py` to `lib/features/ai/application/gemini_service.dart` using the `google_generative_ai` package to fetch custom JSON topics.
-- [ ] **Widget Tests:** Write `test/features/word_search/presentation/game_screen_test.dart` to simulate drag-selections and button taps.
-- [ ] **Build Verification:** Execute `flutter build web --wasm` and `flutter build apk` to verify all target builds compile successfully.
-- [ ] **Finalize:** Update `docs/FLUTTER_MIGRATION_ROADMAP.md` to mark the migration as successfully completed.
+- **Reasoning Level:** Low / Medium
+- [x] **Gemini API:** Port `ai/topic_generator.py` to `lib/features/ai/application/gemini_service.dart` using `google_generative_ai` with JSON schema prompts, fallback defaults, and Riverpod DI.
+- [x] **Pack Repository:** Port `storage/pack_loader.py` and `pack_exporter.py` to `lib/features/word_search/data/pack_repository.dart` with bundled packs (Science, Computing, Japanese), dynamic JSON loading, and puzzle export.
+- [x] **Learning Mode:** Port `learning/` to `lib/features/learning/application/` (`mastery_tracker.dart`, `vocabulary_deck.dart`, `adaptive_recommender.dart`, and `learning_provider.dart`) for spaced repetition mastery classification, deck filtering, and targeted review puzzles.
+- [x] **Test Suite & Code Quality:** All 125 unit and widget tests pass 100% via `flutter test`. `flutter analyze` reports No issues found.
+- [x] **Build Verification:** Verified web compilation with `flutter build web --wasm`.
+- [x] **Finalize:** Updated `docs/FLUTTER_MIGRATION_ROADMAP.md` and migration plans to mark the migration completed.

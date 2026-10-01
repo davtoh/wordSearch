@@ -16,12 +16,12 @@ Because the Python engine was designed with strict decoupling (zero GUI dependen
 | `core/models.py` | `word_search_app/lib/core/models/` (`word_entry.dart`, `puzzle.dart`, etc.) | ✅ Complete | Immutable data classes using `Equatable`, `copyWith`, and JSON parsing |
 | `core/scripts.py` | `word_search_app/lib/core/constants/scripts.dart` | ✅ Complete | Unicode & CJK character pools (Hiragana, Katakana, Kanji, Spanish, Cyrillic) |
 | `core/grid_engine.py` | `word_search_app/lib/core/engine/grid_engine.dart` | ✅ Complete | 8-way directional word placement, density calculation, and distractor shifting |
-| `core/game_state.py` | `word_search_app/lib/features/word_search/application/game_provider.dart` | ⏳ Phase 4 | State management using `flutter_riverpod` (Notifier & State) |
-| `assists/` | `word_search_app/lib/features/word_search/application/assists_service.dart` | ⏳ Phase 4 | Pluggable assist providers (Proximity radar, 6-Tier Hints, Inactivity detector) |
-| `gui/views/board_view.py` | `word_search_app/lib/features/word_search/presentation/widgets/board_widget.dart` | ⏳ Phase 5 | Custom `GestureDetector` + `CustomPainter` with straight-line drag snapping |
-| `learning/` & `telemetry/` | `word_search_app/lib/features/learning/` & `telemetry/` | ⏳ Phase 6 | Spaced repetition vocabulary tracker and session telemetry |
-| `storage/` | `word_search_app/lib/features/word_search/data/pack_repository.dart` | ⏳ Phase 6 | JSON asset pack loader and local cache |
-| `ai/` (`topic_generator.py`) | `word_search_app/lib/features/ai/application/gemini_service.dart` | ⏳ Phase 7 | Gemini SDK client (`google_generative_ai`) for AI puzzle generation |
+| `core/game_state.py` | `word_search_app/lib/features/word_search/application/game_provider.dart` | ✅ Complete | State management using `flutter_riverpod` (Notifier & State) |
+| `assists/` | `word_search_app/lib/features/word_search/application/assists_service.dart` | ✅ Complete | Pluggable assist providers (Proximity radar, 6-Tier Hints, Inactivity detector) |
+| `gui/views/board_view.py` | `word_search_app/lib/features/word_search/presentation/widgets/board_widget.dart` | ✅ Complete | Custom `GestureDetector` + `CustomPainter` with straight-line drag snapping |
+| `learning/` & `telemetry/` | `word_search_app/lib/features/learning/application/` | ✅ Complete | Spaced repetition vocabulary tracker and session telemetry |
+| `storage/` | `word_search_app/lib/features/word_search/data/pack_repository.dart` | ✅ Complete | JSON asset pack loader, exporter, and local cache |
+| `ai/` (`topic_generator.py`) | `word_search_app/lib/features/ai/application/gemini_service.dart` | ✅ Complete | Gemini SDK client (`google_generative_ai`) for AI puzzle generation |
 
 ---
 
