@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/word_search/presentation/game_screen.dart';
+import 'app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,11 +28,13 @@ void main() async {
 }
 
 class WordSearchApp extends StatelessWidget {
-  const WordSearchApp({super.key});
+  const WordSearchApp({super.key, this.router});
+
+  final RouterConfig<Object>? router;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Word Search App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -50,7 +52,7 @@ class WordSearchApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system,
-      home: const GameScreen(),
+      routerConfig: router ?? appRouter,
     );
   }
 }

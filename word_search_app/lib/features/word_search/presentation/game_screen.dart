@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/models/models.dart';
 import '../application/game_provider.dart';
@@ -31,6 +32,25 @@ class GameScreen extends ConsumerWidget {
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            key: const Key('game_back_to_menu_button'),
+            icon: const Icon(Icons.arrow_back),
+            tooltip: 'Main Menu',
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            onPressed: () {
+              try {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/');
+                }
+              } catch (_) {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              }
+            },
+          ),
           title: const FittedBox(
             fit: BoxFit.scaleDown,
             child: Text('Word Search App'),
