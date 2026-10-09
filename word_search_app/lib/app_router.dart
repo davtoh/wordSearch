@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'features/learning/presentation/learn_screen.dart';
 import 'features/navigation/presentation/main_menu_screen.dart';
 import 'features/packs/presentation/pack_library_screen.dart';
 import 'features/word_search/presentation/game_screen.dart';
@@ -126,11 +127,7 @@ class LearnModeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _DestinationShellScreen(
-      title: 'Learn Mode',
-      icon: Icons.school_rounded,
-      description: 'Strengthen vocabulary retention with adaptive spaced repetition.',
-    );
+    return const LearnScreen();
   }
 }
 

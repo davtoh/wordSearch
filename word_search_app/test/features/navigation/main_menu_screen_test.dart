@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:word_search_app/app_router.dart';
 import 'package:word_search_app/core/models/models.dart';
 import 'package:word_search_app/features/navigation/presentation/main_menu_screen.dart';
+import 'package:word_search_app/features/packs/presentation/pack_library_screen.dart';
 import 'package:word_search_app/features/word_search/application/game_provider.dart';
 import 'package:word_search_app/features/word_search/presentation/game_screen.dart';
 
@@ -226,8 +227,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(PackLibraryScreen), findsOneWidget);
 
-      // Navigate back using destination back button
-      await tester.tap(find.byKey(const Key('destination_back_button')));
+      // Navigate back using pack library back button
+      await tester.tap(find.byKey(const Key('pack_library_back_button')));
       await tester.pumpAndSettle();
       expect(find.text('Welcome to Word Search'), findsOneWidget);
 
@@ -236,7 +237,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(LearnModeScreen), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('return_to_menu_button')));
+      await tester.tap(find.byKey(const Key('learn_back_button')));
       await tester.pumpAndSettle();
       expect(find.text('Welcome to Word Search'), findsOneWidget);
 

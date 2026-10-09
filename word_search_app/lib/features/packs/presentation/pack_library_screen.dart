@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,14 +45,12 @@ class _PackLibraryScreenState extends ConsumerState<PackLibraryScreen> {
 
         );
 
-        if (result != null && result.isNotEmpty) {
+        if (result.isNotEmpty) {
           final file = result.first;
           fileName = file.name;
           if (file.path != null) {
-          jsonContent = await File(file.path!).readAsString();
-        } else {
-          // Unable to read file content; fallback handling could be added here
-        }
+            jsonContent = await File(file.path!).readAsString();
+          }
         }
       }
 
