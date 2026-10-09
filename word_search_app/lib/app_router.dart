@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/navigation/presentation/main_menu_screen.dart';
+import 'features/packs/presentation/pack_library_screen.dart';
 import 'features/word_search/presentation/game_screen.dart';
 
 /// Route constants for declarative routing across the app.
@@ -117,19 +118,7 @@ class _DestinationShellScreen extends StatelessWidget {
   }
 }
 
-/// Pack Library Screen destination
-class PackLibraryScreen extends StatelessWidget {
-  const PackLibraryScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const _DestinationShellScreen(
-      title: 'Pack Library',
-      icon: Icons.auto_stories_rounded,
-      description: 'Explore curated word search packs and custom themes.',
-    );
-  }
-}
 
 /// Learn Mode Screen destination
 class LearnModeScreen extends StatelessWidget {

@@ -1,0 +1,5 @@
+# Model Switching & Quota Recovery Protocol
+- System context and task execution state must be preserved incrementally in `EXECUTED_PLAN.md`.
+- If a quota or rate-limit error is encountered:
+  1. Record current task state in `EXECUTED_PLAN.md`.
+  2. When execution resumes (even under a different model, e.g., Gemini Flash), inspect `git status` and pick up the exact next uncompleted step without re-executing completed work.
