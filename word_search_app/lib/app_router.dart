@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'features/ai_generator/presentation/ai_generator_screen.dart';
 import 'features/learning/presentation/learn_screen.dart';
 import 'features/navigation/presentation/main_menu_screen.dart';
 import 'features/packs/presentation/pack_library_screen.dart';
@@ -131,17 +132,13 @@ class LearnModeScreen extends StatelessWidget {
   }
 }
 
-/// AI Generator Screen destination
-class AiGeneratorScreen extends StatelessWidget {
-  const AiGeneratorScreen({super.key});
+/// AI Generator Screen destination – delegates to the real feature screen.
+class AiGeneratorShellScreen extends StatelessWidget {
+  const AiGeneratorShellScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const _DestinationShellScreen(
-      title: 'AI Generator',
-      icon: Icons.auto_awesome_rounded,
-      description: 'Generate dynamic puzzle topics tailored to any subject.',
-    );
+    return const AiGeneratorScreen();
   }
 }
 
@@ -220,7 +217,7 @@ GoRouter createAppRouter({
               GoRoute(
                 path: AppRoutes.aiGenerator,
                 name: 'ai_generator',
-                builder: (context, state) => const AiGeneratorScreen(),
+                builder: (context, state) => const AiGeneratorShellScreen(),
               ),
             ],
           ),

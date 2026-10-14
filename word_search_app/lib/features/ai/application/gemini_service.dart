@@ -124,6 +124,68 @@ class GeminiService {
     return offlineFallback(topic, language: language, count: count);
   }
 
+  /// Like [generateWords] but throws on any API error instead of falling back
+  /// to the offline word bank. Use when callers need to surface error states.
+  Future<List<Map<String, String?>>> generateWordsOrThrow({
+    required String topic,
+    String language = 'en',
+    int count = 10,
+    Difficulty difficulty = Difficulty.easy,
+    ScriptType scriptType = ScriptType.latin,
+  }) async {
+    final prompt =
+        "Generate $count engaging vocabulary words related to the topic '$topic'.\n"
+        'Language: $language\n'
+        'Script: ${scriptType.value}\n'
+        'Difficulty level: ${difficulty.value}\n'
+        'Ensure the words are relevant, educational, and fun to search for.';
+
+    String? jsonResponse;
+
+    if (rawJsonGenerator != null) {
+      jsonResponse = await rawJsonGenerator!(systemInstruction, prompt);
+    } else if (!isConfigured) {
+      return offlineFallback(topic, language: language, count: count);
+    } else {
+      final client = model ??
+          GenerativeModel(
+            model: modelName,
+            apiKey: _apiKey ?? '',
+            systemInstruction: Content.system(systemInstruction),
+            generationConfig: GenerationConfig(
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+            ),
+          );
+      final response = await client.generateContent([Content.text(prompt)]);
+      jsonResponse = response.text;
+    }
+
+    if (jsonResponse != null && jsonResponse.trim().isNotEmpty) {
+      final cleanedJson = _cleanJsonMarkdown(jsonResponse);
+      final dynamic parsed = jsonDecode(cleanedJson);
+      if (parsed is List && parsed.isNotEmpty) {
+        final words = <Map<String, String?>>[];
+        for (final item in parsed) {
+          if (item is Map && item.containsKey('word')) {
+            final rawWord = item['word']?.toString().trim() ?? '';
+            if (rawWord.isNotEmpty) {
+              words.add({
+                'word': rawWord,
+                'clue': item['clue']?.toString() ?? 'Concept related to $topic',
+                'reading': item['reading']?.toString(),
+              });
+            }
+          }
+        }
+        if (words.isNotEmpty) return words;
+      }
+    }
+
+    // Return empty list rather than throwing when JSON is just empty/malformed.
+    return [];
+  }
+
   /// Generates a complete, ready-to-play [Puzzle] for [topic].
   Future<Puzzle> generatePuzzle({
     required String topic,
