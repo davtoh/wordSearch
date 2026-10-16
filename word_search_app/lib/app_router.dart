@@ -5,6 +5,7 @@ import 'features/ai_generator/presentation/ai_generator_screen.dart';
 import 'features/learning/presentation/learn_screen.dart';
 import 'features/navigation/presentation/main_menu_screen.dart';
 import 'features/packs/presentation/pack_library_screen.dart';
+import 'features/settings/presentation/settings_screen.dart';
 import 'features/word_search/presentation/game_screen.dart';
 
 /// Route constants for declarative routing across the app.
@@ -142,17 +143,13 @@ class AiGeneratorShellScreen extends StatelessWidget {
   }
 }
 
-/// Settings Screen destination
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+/// Settings Screen destination – delegates to the real feature screen.
+class SettingsShellScreen extends StatelessWidget {
+  const SettingsShellScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const _DestinationShellScreen(
-      title: 'Settings',
-      icon: Icons.settings_rounded,
-      description: 'Configure game preferences, sound effects, and display themes.',
-    );
+    return const SettingsScreen();
   }
 }
 
@@ -227,7 +224,7 @@ GoRouter createAppRouter({
               GoRoute(
                 path: AppRoutes.settings,
                 name: 'settings',
-                builder: (context, state) => const SettingsScreen(),
+                builder: (context, state) => const SettingsShellScreen(),
               ),
             ],
           ),
