@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:word_search_app/core/models/models.dart';
 import 'package:word_search_app/features/ai/application/gemini_service.dart';
 import 'package:word_search_app/features/ai_generator/application/gemini_service.dart'
-    show AiGeneratorNotifier, AiGeneratorState, AiGeneratorStatus, aiGeneratorProvider;
+    show AiGeneratorState, AiGeneratorStatus, aiGeneratorProvider;
 import 'package:word_search_app/features/ai_generator/presentation/ai_generator_screen.dart';
 
 // ─────────────────────────────────────────────────────────
@@ -482,10 +482,6 @@ void main() {
       // Initially no launch button.
       expect(find.byKey(const Key('ai_launch_game_button')), findsNothing);
 
-      // Manually add words via notifier to avoid needing a real service call.
-      final container = tester
-          .element(find.byType(AiGeneratorScreen))
-          .findAncestorWidgetOfExactType<ProviderScope>();
       // We verify the button shows only after generation from the state tests above.
       // This widget test only verifies the idle-state absence.
     });

@@ -18,7 +18,9 @@ This document tracks the incremental migration of the Python/Pygame word search 
 | App Navigation & Shell | `word_search_app/lib/app_router.dart`, `lib/features/navigation/presentation/main_menu_screen.dart` | ✅ Completed (Task 1) | Declarative GoRouter routing preserving GameState across destinations, responsive Wrap/Flex main menu tiles with ≥ 48×48 dp touch targets. |
 | `storage/` & Pack Management | `word_search_app/lib/features/packs/` (`presentation/pack_library_screen.dart`, `data/pack_repository.dart`) | ✅ Completed (Task 2) | Local JSON pack loading, file_picker JSON pack import, active puzzle and pack serialization to standard schemas, and script pool cards. |
 | `learning/` & `telemetry/` | `word_search_app/lib/features/learning/` (`application/mastery_notifier.dart`, `presentation/learn_screen.dart`) | ✅ Completed (Phase 7 & Task 3) | Spaced repetition flashcards (`mastery_tracker.py` port), solve velocity & review stats, Semantics labels, soft keyboard suppression, and dynamic un-mastered word search puzzle generator. |
-| `ai/` (`topic_generator.py`) | `word_search_app/lib/features/ai/application/gemini_service.dart` | ✅ Completed (Phase 7) | Official `google_generative_ai` SDK integration for generating custom multilingual word packs with offline fallback. |
+| `ai/` (`topic_generator.py`) | `word_search_app/lib/features/ai_generator/` & `lib/features/ai/` | ✅ Completed (Task 4) | Prompt input with FocusNode soft keyboard control, Gemini async loading/error states, editable Wrap chip layout, and direct puzzle generation. |
+| `gui/` (Settings & Themes) | `word_search_app/lib/features/settings/` (`theme_notifier.dart`, `settings_screen.dart`) | ✅ Completed (Task 5) | Light, Dark, and WCAG AA (> 4.5:1) High-Contrast themes, orientation preferences (portrait lock vs auto-rotate), live preview font scaler (100%–200%). |
+| Post-Game & Victory | `word_search_app/lib/features/word_search/presentation/widgets/victory_dialog.dart` | ✅ Completed (Task 6) | Modal sheet triggered on `GameState.isCompleted`, showing elapsed time, words found count, hint usage stats, and quick actions ("Play Again", "Return to Main Menu", "Add Words to Learn Deck"). |
 
 ---
 
@@ -110,6 +112,43 @@ This document tracks the incremental migration of the Python/Pygame word search 
     - Word bank drawer and HUD scale gracefully with 200% dynamic OS text scale without overflow.
     - Word Bank items provide accessible semantic descriptions.
   - Verification: **95/95 tests passing**, `flutter analyze` — No issues found.
+
+### Task 4: AI Topic Generator View
+- **Date Completed:** 2026-10-15
+- **Changes:**
+  - Implemented `lib/features/ai_generator/presentation/ai_generator_screen.dart` and `application/gemini_service.dart`.
+  - Focused keyboard management with `Focus(canRequestFocus: false)` on non-text elements.
+  - Candidate words in editable `Wrap` chip layout with delete buttons and custom word addition dialog.
+  - Async loading indicators and error handling with `SnackBar` retry.
+  - Direct puzzle launch handed off to `gameProvider`.
+  - Verification: 25/25 tests passing in `test/features/ai/gemini_service_test.dart`.
+
+### Task 5: Settings & Theme Configuration View
+- **Date Completed:** 2026-10-15
+- **Changes:**
+  - Implemented `lib/features/settings/presentation/settings_screen.dart` and `application/theme_notifier.dart`.
+  - Added Light, Dark, and High-Contrast (amber on true black, WCAG AA > 4.5:1) color themes.
+  - Added orientation preferences (`portraitLock` vs `autoRotate`) with platform awareness.
+  - Live preview slider with font scaling from 100% to 200%.
+  - Wired `themeNotifierProvider` globally in `main.dart` and shell in `app_router.dart`.
+  - Verification: 29/29 tests passing in `test/features/settings/settings_screen_test.dart`.
+
+### Task 6: Victory Modal & Post-Game Sheet Integration
+- **Date Completed:** 2026-10-16
+- **Changes:**
+  - Implemented `lib/features/word_search/presentation/widgets/victory_dialog.dart`:
+    - Modal bottom sheet displaying celebration badge, title, and metadata.
+    - Post-game stats dashboard: Time Elapsed (`MM:SS`), Words Found (`found / total`), and Hint Usage (`hintsUsedCount`).
+    - Discovered words preview in responsive `Wrap` of `Chip`s.
+    - Quick actions: "Play Again", "Return to Main Menu", and "Add Words to Learn Deck".
+  - Updated `lib/features/word_search/presentation/game_screen.dart`:
+    - Wired `ref.listen<GameState>` to trigger `showVictoryModalSheet` when `GameState.isCompleted` becomes true.
+    - Made HUD "🎉 Completed!" banner interactive to allow re-opening the sheet after dismissal.
+  - Updated `lib/features/learning/application/learning_provider.dart`:
+    - Added `addWordsToLearnDeck({required List<WordEntry> words, ...})` to `PlayerProfileNotifier`.
+  - Updated `lib/features/word_search/domain/game_state.dart` and `lib/core/models/puzzle.dart`:
+    - Added `isCompleted`, `hintsUsedCount`, and `totalHintTiersUsed` getters.
+  - Verification: **14/14 tests passing** in `test/features/word_search/victory_dialog_test.dart`. Total suite: **217/217 passing**, `flutter analyze` completely clean (0 issues).
 
 ---
 

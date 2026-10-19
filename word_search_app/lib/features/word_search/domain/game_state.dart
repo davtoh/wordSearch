@@ -159,6 +159,17 @@ class GameState extends Equatable {
   bool get isComplete =>
       puzzle.words.isNotEmpty && foundWords.length >= puzzle.words.length;
 
+  /// Whether the game session is completed (all words found or status is won).
+  bool get isCompleted => isComplete || status == GameStatus.won;
+
+  /// Number of words for which hints were consumed.
+  int get hintsUsedCount =>
+      puzzle.words.where((w) => w.hintTierUsed != HintTier.none).length;
+
+  /// Total count of progressive hint tiers used across all words.
+  int get totalHintTiersUsed =>
+      puzzle.words.fold<int>(0, (sum, w) => sum + w.hintTierUsed.level);
+
   /// Progress ratio from 0.0 to 1.0.
   double get progress =>
       puzzle.words.isEmpty ? 0.0 : foundWords.length / puzzle.words.length;

@@ -46,6 +46,15 @@ enum Difficulty {
 
   String get value => name; // 'easy', 'medium', …
 
+  /// Capitalised human-readable display label.
+  String get humanReadable => switch (this) {
+        Difficulty.easy => 'Easy',
+        Difficulty.medium => 'Medium',
+        Difficulty.hard => 'Hard',
+        Difficulty.expert => 'Expert',
+        Difficulty.dynamic => 'Dynamic',
+      };
+
   static Difficulty fromValue(String v) =>
       Difficulty.values.firstWhere((e) => e.value == v,
           orElse: () => Difficulty.easy);

@@ -39,6 +39,26 @@ class PlayerProfileNotifier extends Notifier<PlayerProfile> {
     return record;
   }
 
+  /// Adds a list of words to the player's vocabulary deck.
+  List<WordMasteryRecord> addWordsToLearnDeck({
+    required List<WordEntry> words,
+    double solveTimeSeconds = 0.0,
+    String language = 'en',
+  }) {
+    final records = <WordMasteryRecord>[];
+    for (final word in words) {
+      final rec = recordWordSolve(
+        wordEntry: word,
+        solveTimeSeconds: words.isNotEmpty && solveTimeSeconds > 0
+            ? solveTimeSeconds / words.length
+            : 10.0,
+        language: language,
+      );
+      records.add(rec);
+    }
+    return records;
+  }
+
   /// Records completion metrics for a finished game session.
   void recordGameFinished({
     required bool won,

@@ -15,28 +15,6 @@ Widget _wrapSettings() {
   );
 }
 
-ProviderContainer _makeContainer({SettingsState? initial}) {
-  final container = ProviderContainer(
-    overrides: initial == null
-        ? []
-        : [
-            themeNotifierProvider.overrideWith(
-              () => _SeedableThemeNotifier(initial),
-            ),
-          ],
-  );
-  return container;
-}
-
-/// Allows seeding ThemeNotifier with a custom initial state in tests.
-class _SeedableThemeNotifier extends ThemeNotifier {
-  _SeedableThemeNotifier(this._initial);
-  final SettingsState _initial;
-
-  @override
-  SettingsState build() => _initial;
-}
-
 // ─────────────────────────────────────────────────────────
 // ThemeNotifier unit tests
 // ─────────────────────────────────────────────────────────
@@ -446,20 +424,9 @@ void main() {
   // ─────────────────────────────────────────────────────────
 
   group('High-contrast WCAG AA contrast ratio', () {
-    /// Relative luminance per WCAG 2.1 §1.4.3.
-    double _luminance(Color c) {
-      double f(double v) {
-        v = v / 255.0;
-        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) * ((v + 0.055) / 1.055);
-      }
-      return 0.2126 * f(c.red.toDouble()) +
-          0.7152 * f(c.green.toDouble()) +
-          0.0722 * f(c.blue.toDouble());
-    }
-
-    double _contrast(Color a, Color b) {
-      final la = _luminance(a);
-      final lb = _luminance(b);
+    double contrast(Color a, Color b) {
+      final la = a.computeLuminance();
+      final lb = b.computeLuminance();
       final lighter = la > lb ? la : lb;
       final darker = la > lb ? lb : la;
       return (lighter + 0.05) / (darker + 0.05);
@@ -473,7 +440,7 @@ void main() {
       notifier.setColorTheme(AppColorTheme.highContrast);
       final scheme = notifier.darkTheme.colorScheme;
 
-      final ratio = _contrast(scheme.primary, scheme.onPrimary);
+      final ratio = contrast(scheme.primary, scheme.onPrimary);
       expect(ratio, greaterThanOrEqualTo(4.5),
           reason:
               'WCAG AA requires ≥ 4.5:1 contrast ratio. Got ${ratio.toStringAsFixed(2)}:1');
@@ -488,7 +455,7 @@ void main() {
       notifier.setColorTheme(AppColorTheme.highContrast);
       final scheme = notifier.darkTheme.colorScheme;
 
-      final ratio = _contrast(scheme.surface, scheme.onSurface);
+      final ratio = contrast(scheme.surface, scheme.onSurface);
       expect(ratio, greaterThanOrEqualTo(4.5),
           reason:
               'WCAG AA requires ≥ 4.5:1 contrast ratio. Got ${ratio.toStringAsFixed(2)}:1');
@@ -503,7 +470,7 @@ void main() {
       notifier.setColorTheme(AppColorTheme.highContrast);
       final scheme = notifier.darkTheme.colorScheme;
 
-      final ratio = _contrast(scheme.error, scheme.errorContainer);
+      final ratio = contrast(scheme.error, scheme.errorContainer);
       expect(ratio, greaterThanOrEqualTo(4.5),
           reason:
               'WCAG AA requires ≥ 4.5:1 contrast ratio. Got ${ratio.toStringAsFixed(2)}:1');

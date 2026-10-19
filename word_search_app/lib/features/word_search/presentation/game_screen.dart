@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/models/models.dart';
+import '../../../core/models/models.dart';
+import '../../learning/application/learning_provider.dart';
 import '../application/game_provider.dart';
 import '../domain/game_state.dart';
 import 'widgets/board_widget.dart';
+import 'widgets/victory_dialog.dart';
 
 /// Main responsive Game Screen supporting both Mobile (vertical stack + NavigationBar)
 /// and Tablet/Desktop (side-by-side + NavigationRail) layouts.
@@ -23,6 +25,54 @@ class GameScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameProvider);
     final gameNotifier = ref.read(gameProvider.notifier);
+
+    // Trigger Victory Modal Sheet when game becomes completed
+    ref.listen<GameState>(gameProvider, (previous, next) {
+      final wasCompleted = previous?.isCompleted ?? false;
+      if (!wasCompleted && next.isCompleted) {
+        showVictoryModalSheet(
+          context: context,
+          gameState: next,
+          onPlayAgain: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+            ref.read(gameProvider.notifier).resetGame();
+          },
+          onReturnToMainMenu: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+            try {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            } catch (_) {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            }
+          },
+          onAddToLearnDeck: () {
+            ref.read(playerProfileProvider.notifier).addWordsToLearnDeck(
+                  words: next.foundWords.isNotEmpty
+                      ? next.foundWords
+                      : next.puzzle.words,
+                  solveTimeSeconds: next.totalElapsedSeconds,
+                );
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Words added to Learn Deck!'),
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        );
+      }
+    });
 
     final theme = Theme.of(context);
 
@@ -278,11 +328,18 @@ class GameScreen extends ConsumerWidget {
               ),
             ),
           if (state.status == GameStatus.won)
-            const Text(
-              '🎉 Completed!',
-              style: TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
+            InkWell(
+              key: const Key('hud_victory_completed_button'),
+              onTap: () => showVictoryModalSheet(
+                context: context,
+                gameState: state,
+              ),
+              child: const Text(
+                '🎉 Completed!',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             )
           else if (state.status == GameStatus.givenUp)

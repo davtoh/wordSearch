@@ -122,9 +122,6 @@ class SettingsState extends Equatable {
 /// Background: true black (#000000).
 /// Foreground: true white (#FFFFFF).
 /// Accent: bright amber (#FFD700) for interactive highlights.
-/// All foreground / background combos exceed WCAG AA 4.5:1 (most exceed 7:1).
-const _highContrastSeed = Color(0xFFFFD700); // Amber accent
-
 ThemeData _buildHighContrastTheme() {
   const bg = Color(0xFF000000);
   const surface = Color(0xFF0D0D0D);

@@ -46,6 +46,12 @@ class Puzzle extends Equatable {
   /// Total number of words in the puzzle.
   int get totalWords => words.length;
 
+  /// Puzzle title convenience getter.
+  String get title => metadata.title;
+
+  /// Puzzle difficulty convenience getter.
+  Difficulty get difficulty => metadata.difficulty;
+
   /// Number of words already found by the player.
   int get foundWordsCount => words.where((w) => w.found).length;
 
