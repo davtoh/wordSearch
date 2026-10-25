@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/models/models.dart';
 import '../application/gemini_service.dart';
+import 'widgets/ai_config_dialog.dart';
 
 // ─────────────────────────────────────────────────────────
 // AiGeneratorScreen
@@ -66,6 +67,15 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
 
   Future<void> _onGenerate() async {
     _unfocusKeyboard();
+    final geminiService = ref.read(geminiServiceProvider);
+    if (!geminiService.isConfigured) {
+      await showAiConfigDialog(context, ref);
+      if (!mounted) return;
+      if (!ref.read(geminiServiceProvider).isConfigured) {
+        return;
+      }
+    }
+
     final notifier = ref.read(aiGeneratorProvider.notifier);
     notifier.setTopic(_topicController.text);
     await notifier.generateWords();
@@ -74,17 +84,26 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
     if (!mounted) return;
     final state = ref.read(aiGeneratorProvider);
     if (state.isError && state.errorMessage != null) {
+      final isKeyIssue = state.errorMessage!.toLowerCase().contains('api key') ||
+          state.errorMessage!.toLowerCase().contains('configured');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           key: const Key('ai_error_snack_bar'),
           content: Text(state.errorMessage!),
           backgroundColor: Theme.of(context).colorScheme.error,
-          action: SnackBarAction(
-            key: const Key('ai_error_retry_action'),
-            label: 'Retry',
-            textColor: Theme.of(context).colorScheme.onError,
-            onPressed: _onGenerate,
-          ),
+          action: isKeyIssue
+              ? SnackBarAction(
+                  key: const Key('ai_error_configure_action'),
+                  label: 'Configure',
+                  textColor: Theme.of(context).colorScheme.onError,
+                  onPressed: () => showAiConfigDialog(context, ref),
+                )
+              : SnackBarAction(
+                  key: const Key('ai_error_retry_action'),
+                  label: 'Retry',
+                  textColor: Theme.of(context).colorScheme.onError,
+                  onPressed: _onGenerate,
+                ),
         ),
       );
     }
@@ -207,6 +226,18 @@ class _AiGeneratorScreenState extends ConsumerState<AiGeneratorScreen> {
           ),
           title: const Text('AI Topic Generator'),
           actions: [
+            // Quick action to configure API key & model
+            Focus(
+              canRequestFocus: false,
+              child: IconButton(
+                key: const Key('ai_config_action_button'),
+                icon: const Icon(Icons.tune_rounded),
+                tooltip: 'AI & Model Configuration',
+                constraints:
+                    const BoxConstraints(minWidth: 48, minHeight: 48),
+                onPressed: () => showAiConfigDialog(context, ref),
+              ),
+            ),
             // Clear all chip button — non-text, so canRequestFocus: false.
             if (aiState.hasWords)
               Focus(
@@ -384,29 +415,43 @@ class _TopicInputSection extends ConsumerWidget {
                     fontWeight: FontWeight.bold,
                   ),
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isConfigured
-                      ? Icons.check_circle_rounded
-                      : Icons.warning_amber_rounded,
-                  size: 14,
-                  color: isConfigured
-                      ? colorScheme.primary
-                      : colorScheme.error,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  isConfigured ? 'Gemini AI Ready' : 'API Key Missing',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: isConfigured
-                        ? colorScheme.primary
-                        : colorScheme.error,
-                    fontWeight: FontWeight.w600,
+            Focus(
+              canRequestFocus: false,
+              child: InkWell(
+                key: const Key('ai_status_badge'),
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => showAiConfigDialog(context, ref),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isConfigured
+                            ? Icons.check_circle_rounded
+                            : Icons.warning_amber_rounded,
+                        size: 14,
+                        color: isConfigured
+                            ? colorScheme.primary
+                            : colorScheme.error,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isConfigured ? 'Gemini AI Ready' : 'API Key Missing',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: isConfigured
+                              ? colorScheme.primary
+                              : colorScheme.error,
+                          fontWeight: FontWeight.w600,
+                          decoration:
+                              isConfigured ? null : TextDecoration.underline,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -491,14 +536,18 @@ class _DifficultyRow extends ConsumerWidget {
 // _ErrorBanner
 // ─────────────────────────────────────────────────────────
 
-class _ErrorBanner extends StatelessWidget {
+class _ErrorBanner extends ConsumerWidget {
   const _ErrorBanner({required this.message});
 
   final String message;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isKeyIssue = message.toLowerCase().contains('api key') ||
+        message.toLowerCase().contains('configured') ||
+        message.toLowerCase().contains('missing');
+
     return Container(
       key: const Key('ai_error_banner'),
       padding: const EdgeInsets.all(12),
@@ -506,16 +555,40 @@ class _ErrorBanner extends StatelessWidget {
         color: colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(color: colorScheme.onErrorContainer),
-            ),
+          Row(
+            children: [
+              Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message,
+                  style: TextStyle(color: colorScheme.onErrorContainer),
+                ),
+              ),
+            ],
           ),
+          if (isKeyIssue) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Focus(
+                canRequestFocus: false,
+                child: TextButton.icon(
+                  key: const Key('ai_banner_configure_button'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.onErrorContainer,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: () => showAiConfigDialog(context, ref),
+                  icon: const Icon(Icons.settings_suggest_rounded, size: 16),
+                  label: const Text('Configure API Key & Model'),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -22,6 +22,40 @@ class GeminiConfigException implements Exception {
   String toString() => message;
 }
 
+/// Available Gemini models for word search vocabulary generation.
+class GeminiModelOption {
+  const GeminiModelOption({
+    required this.id,
+    required this.name,
+    required this.description,
+    this.isRecommended = false,
+  });
+
+  final String id;
+  final String name;
+  final String description;
+  final bool isRecommended;
+}
+
+const List<GeminiModelOption> kGeminiModels = [
+  GeminiModelOption(
+    id: 'gemini-3.5-flash-lite',
+    name: '3.5 Flash Lite',
+    description: 'Fast, lightweight & reliable (Recommended)',
+    isRecommended: true,
+  ),
+  GeminiModelOption(
+    id: 'gemini-3.1-flash-lite',
+    name: '3.1 Flash Lite',
+    description: 'Ultra-low latency for fast generation',
+  ),
+  GeminiModelOption(
+    id: 'gemini-3.8-flash',
+    name: '3.8 Flash',
+    description: 'Advanced reasoning with 1M context',
+  ),
+];
+
 /// Provider for an optional user-entered Gemini API key in Settings.
 final customGeminiApiKeyProvider =
     NotifierProvider<CustomApiKeyNotifier, String?>(
@@ -38,13 +72,34 @@ class CustomApiKeyNotifier extends Notifier<String?> {
   }
 }
 
+/// Provider for the currently selected Gemini model.
+final selectedGeminiModelProvider =
+    NotifierProvider<SelectedGeminiModelNotifier, String>(
+  SelectedGeminiModelNotifier.new,
+);
+
+class SelectedGeminiModelNotifier extends Notifier<String> {
+  @override
+  String build() => GeminiService.resolveDefaultModel();
+
+  void setModel(String modelId) {
+    if (kGeminiModels.any((m) => m.id == modelId)) {
+      state = modelId;
+    }
+  }
+}
+
 /// Provider for the Gemini AI topic and puzzle generation service.
 final geminiServiceProvider = Provider<GeminiService>((ref) {
   final customKey = ref.watch(customGeminiApiKeyProvider);
+  final selectedModel = ref.watch(selectedGeminiModelProvider);
   final resolvedKey = (customKey != null && customKey.isNotEmpty)
       ? customKey
       : GeminiService.resolveDefaultApiKey();
-  return GeminiService(apiKey: resolvedKey);
+  return GeminiService(
+    apiKey: resolvedKey,
+    modelName: selectedModel,
+  );
 });
 
 /// Generates thematic vocabulary words and educational clues using Gemini AI.
@@ -62,6 +117,13 @@ class GeminiService {
 
   /// Default model: gemini-3.5-flash-lite (fast, reliable, active).
   static const String defaultModelName = 'gemini-3.5-flash-lite';
+
+  /// Available model identifiers.
+  static const List<String> availableModels = [
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+    'gemini-3.8-flash',
+  ];
 
   /// Fallback models tried in order if transient high demand or errors occur.
   static const List<String> fallbackModels = [
@@ -123,6 +185,51 @@ class GeminiService {
     }
 
     return null;
+  }
+
+  /// Resolves the default Gemini model from compile-time defines, environment, or .env file.
+  static String resolveDefaultModel() {
+    const compileTimeModel = String.fromEnvironment('GEMINI_MODEL');
+    if (compileTimeModel.isNotEmpty) return compileTimeModel.trim();
+
+    if (!kIsWeb) {
+      try {
+        final envModel = Platform.environment['GEMINI_MODEL'];
+        if (envModel != null && envModel.trim().isNotEmpty) {
+          return envModel.trim();
+        }
+
+        final candidates = [
+          File('.env'),
+          File('../.env'),
+          File('${Directory.current.path}/.env'),
+          File('${Directory.current.parent.path}/.env'),
+        ];
+
+        for (final file in candidates) {
+          if (file.existsSync()) {
+            final lines = file.readAsLinesSync();
+            for (final line in lines) {
+              final trimmed = line.trim();
+              if (trimmed.startsWith('#') || !trimmed.contains('=')) continue;
+              final idx = trimmed.indexOf('=');
+              final k = trimmed.substring(0, idx).trim();
+              if (k == 'GEMINI_MODEL') {
+                final v = trimmed
+                    .substring(idx + 1)
+                    .trim()
+                    .replaceAll(RegExp(r'''^["']|["']$'''), '');
+                if (v.isNotEmpty) return v;
+              }
+            }
+          }
+        }
+      } catch (_) {
+        // Filesystem access restricted or failed
+      }
+    }
+
+    return defaultModelName;
   }
 
   /// True if a valid API key or mock generator is configured.

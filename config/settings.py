@@ -34,6 +34,7 @@ class Settings:
             "theme": ThemeMode.DARK,
             "default_language": "en",
             "default_difficulty": Difficulty.EASY,
+            "gemini_model": os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
             "concept_first_mode": False,
             "game_mode": GameMode.CASUAL,
             "timed_attack_seconds": 240,
