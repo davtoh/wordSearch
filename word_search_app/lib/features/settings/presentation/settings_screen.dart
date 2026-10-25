@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../ai/application/gemini_service.dart';
 import '../application/theme_notifier.dart';
 
 // ─────────────────────────────────────────────────────────
@@ -117,6 +118,19 @@ class SettingsScreen extends ConsumerWidget {
               fontScaleFactor: settings.fontScaleFactor,
               colorTheme: settings.colorTheme,
             ),
+
+            const SizedBox(height: 28),
+            const Divider(),
+            const SizedBox(height: 20),
+
+            // ── Gemini AI Configuration ──────────────────────────
+            _SectionHeader(
+              key: const Key('ai_section_header'),
+              icon: Icons.auto_awesome_rounded,
+              title: 'AI Word Generator',
+            ),
+            const SizedBox(height: 12),
+            const _AiSettingsSection(),
 
             const SizedBox(height: 40),
           ],
@@ -427,3 +441,143 @@ class _LivePreviewCard extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────
+// _AiSettingsSection
+// ─────────────────────────────────────────────────────────
+
+class _AiSettingsSection extends ConsumerWidget {
+  const _AiSettingsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final geminiService = ref.watch(geminiServiceProvider);
+    final customKey = ref.watch(customGeminiApiKeyProvider);
+    final isConfigured = geminiService.isConfigured;
+
+    return Card(
+      key: const Key('ai_settings_card'),
+      elevation: 0,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isConfigured ? Icons.check_circle : Icons.warning_amber_rounded,
+                  color: isConfigured ? colorScheme.primary : colorScheme.error,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isConfigured
+                      ? 'AI Service Connected'
+                      : 'No API Key Configured',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isConfigured ? colorScheme.primary : colorScheme.error,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Model: ${geminiService.modelName}\n'
+              '${customKey != null ? "Using custom key" : (isConfigured ? "Detected from .env / environment" : "Add GEMINI_API_KEY in .env or set below")}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Focus(
+                  canRequestFocus: false,
+                  child: OutlinedButton.icon(
+                    key: const Key('set_api_key_button'),
+                    onPressed: () => _showApiKeyDialog(context, ref, customKey),
+                    icon: const Icon(Icons.key_rounded, size: 18),
+                    label: Text(customKey != null ? 'Edit Key' : 'Set Key'),
+                  ),
+                ),
+                if (customKey != null) ...[
+                  const SizedBox(width: 8),
+                  Focus(
+                    canRequestFocus: false,
+                    child: TextButton(
+                      key: const Key('clear_api_key_button'),
+                      onPressed: () => ref
+                          .read(customGeminiApiKeyProvider.notifier)
+                          .setApiKey(null),
+                      child: const Text('Reset to .env'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showApiKeyDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String? currentKey,
+  ) async {
+    final controller = TextEditingController(text: currentKey ?? '');
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Gemini API Key'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter your Google Gemini API key. It will be stored in memory for this session.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'API Key',
+                hintText: 'AIzaSy... or AQ....',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              ref
+                  .read(customGeminiApiKeyProvider.notifier)
+                  .setApiKey(controller.text.trim());
+              Navigator.of(dialogCtx).pop();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+}
+

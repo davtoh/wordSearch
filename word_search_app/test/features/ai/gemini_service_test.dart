@@ -165,6 +165,41 @@ void main() {
       expect(service, isNotNull);
       expect(service, isA<GeminiService>());
     });
+
+    test('resolveDefaultApiKey discovers GEMINI_API_KEY from .env', () {
+      final key = GeminiService.resolveDefaultApiKey();
+      expect(key, isNotNull);
+      expect(key, isNotEmpty);
+      expect(key, startsWith('AQ.'));
+    });
+
+    test('generateWordsOrThrow throws GeminiConfigException when unconfigured', () async {
+      final unconfigured = GeminiService(apiKey: null);
+      expect(unconfigured.isConfigured, isFalse);
+      expect(
+        () => unconfigured.generateWordsOrThrow(topic: 'Space'),
+        throwsA(isA<GeminiConfigException>()),
+      );
+    });
+
+    test('generates words successfully from object-wrapped JSON {"words": [...]}', () async {
+      final mockJson = jsonEncode({
+        'words': [
+          {'word': 'super-nova', 'clue': 'Powerful stellar explosion.'},
+          {'word': 'black hole', 'clue': 'Region of spacetime where gravity is extreme.'},
+        ],
+      });
+
+      final service = GeminiService(
+        apiKey: 'test-key',
+        rawJsonGenerator: (_, _) async => mockJson,
+      );
+
+      final words = await service.generateWordsOrThrow(topic: 'Cosmos', count: 2);
+      expect(words.length, 2);
+      expect(words[0]['word'], 'SUPERNOVA');
+      expect(words[1]['word'], 'BLACKHOLE');
+    });
   });
 
   // ── AiGeneratorNotifier unit tests ───────────────────────────────────────

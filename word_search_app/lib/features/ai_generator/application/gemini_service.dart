@@ -6,6 +6,7 @@ library;
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/engine/grid_engine.dart';
 import '../../../core/models/models.dart';
 import '../../ai/application/gemini_service.dart';
 import '../../word_search/application/game_provider.dart';
@@ -260,13 +261,14 @@ class AiGeneratorNotifier extends Notifier<AiGeneratorState> {
   }) async {
     if (state.candidateWords.length < 3) return;
 
-    final puzzle = await ref.read(geminiServiceProvider).generatePuzzle(
-          topic: state.topic.isNotEmpty ? state.topic : 'AI Generated',
-          language: state.language,
-          count: state.wordCount,
-          difficulty: state.difficulty,
-          scriptType: state.scriptType,
-        );
+    final puzzle = GridEngine.generatePuzzle(
+      wordsData: state.candidateWords,
+      title: state.topic.isNotEmpty ? state.topic : 'AI Generated',
+      theme: state.topic.isNotEmpty ? state.topic : 'AI Generated',
+      language: state.language,
+      difficulty: state.difficulty,
+      scriptType: state.scriptType,
+    );
 
     ref.read(gameProvider.notifier).initGame(puzzle);
     navigateTo('/game');

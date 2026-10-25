@@ -352,7 +352,7 @@ class _AiGeneratorBody extends StatelessWidget {
 // _TopicInputSection
 // ─────────────────────────────────────────────────────────
 
-class _TopicInputSection extends StatelessWidget {
+class _TopicInputSection extends ConsumerWidget {
   const _TopicInputSection({
     required this.focusNode,
     required this.controller,
@@ -366,17 +366,49 @@ class _TopicInputSection extends StatelessWidget {
   final VoidCallback onGenerate;
 
   @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final geminiService = ref.watch(geminiServiceProvider);
+    final isConfigured = geminiService.isConfigured;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Enter a Topic',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Enter a Topic',
+              style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isConfigured
+                      ? Icons.check_circle_rounded
+                      : Icons.warning_amber_rounded,
+                  size: 14,
+                  color: isConfigured
+                      ? colorScheme.primary
+                      : colorScheme.error,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isConfigured ? 'Gemini AI Ready' : 'API Key Missing',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: isConfigured
+                        ? colorScheme.primary
+                        : colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         const SizedBox(height: 8),
 
@@ -658,8 +690,8 @@ class _EmptyStateHint extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Gemini AI will suggest vocabulary words for your puzzle.\n'
-            'Works offline with default words if no API key is set.',
+            'Gemini AI creates fresh, thematic vocabulary words for your puzzle.\n'
+            'Uses your GEMINI_API_KEY from .env or configured in Settings.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
