@@ -8,7 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/engine/grid_engine.dart';
 import '../../../core/models/models.dart';
+import '../../../core/storage/app_storage.dart';
 import '../../ai/application/gemini_service.dart';
+import '../../packs/data/pack_repository.dart';
 import '../../word_search/application/game_provider.dart';
 
 export '../../ai/application/gemini_service.dart';
@@ -269,6 +271,21 @@ class AiGeneratorNotifier extends Notifier<AiGeneratorState> {
       difficulty: state.difficulty,
       scriptType: state.scriptType,
     );
+
+    // Persist as recent/saved pack in PackRepository and internal app storage
+    try {
+      final storage = ref.read(appStorageProvider);
+      final packJson = storage.puzzleToPackJson(
+        puzzle,
+        customTitle: 'AI: ${puzzle.title}',
+      );
+      final pack = PuzzlePack.fromJson(packJson);
+      ref.read(packListProvider.notifier).registerPack(pack);
+      storage.savePuzzleToInternalFolder(
+        puzzle,
+        customTitle: 'AI: ${puzzle.title}',
+      );
+    } catch (_) {}
 
     ref.read(gameProvider.notifier).initGame(puzzle);
     navigateTo('/game');

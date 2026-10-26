@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/engine/grid_engine.dart';
 import '../../../../core/models/models.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../domain/game_state.dart';
 import 'assists_service.dart';
 
@@ -49,8 +50,25 @@ class GameNotifier extends Notifier<GameState> {
       _timer?.cancel();
     });
 
+    _loadSavedGameIfAny();
     final defaultPuzzle = _createDefaultPuzzle();
     return GameState.initial(defaultPuzzle, mode: GameMode.casual);
+  }
+
+  Future<void> _loadSavedGameIfAny() async {
+    try {
+      final storage = ref.read(appStorageProvider);
+      final savedState = await storage.loadActiveGame();
+      if (savedState != null && !savedState.isCompleted) {
+        state = savedState;
+      }
+    } catch (_) {}
+  }
+
+  void _persistState() {
+    try {
+      ref.read(appStorageProvider).saveActiveGame(state);
+    } catch (_) {}
   }
 
   // ─── Lifecycle & Setup ───────────────────────────────────
@@ -66,6 +84,7 @@ class GameNotifier extends Notifier<GameState> {
     assistsService.stallDetector.reset();
 
     state = GameState.initial(puzzle, mode: mode);
+    _persistState();
 
     if (autoStartTimer) {
       startTimer();
@@ -295,6 +314,7 @@ class GameNotifier extends Notifier<GameState> {
       status: isWon ? GameStatus.won : state.status,
       clearStallAlert: true,
     );
+    _persistState();
   }
 
   // ─── Assists API ──────────────────────────────────────────

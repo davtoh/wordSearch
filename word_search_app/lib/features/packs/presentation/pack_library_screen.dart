@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -8,6 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app_router.dart';
 import '../../../core/models/models.dart';
+import '../../../core/storage/app_storage.dart';
 import '../../word_search/application/game_provider.dart';
 import '../data/pack_repository.dart';
 
@@ -111,6 +113,7 @@ class _PackLibraryScreenState extends ConsumerState<PackLibraryScreen> {
   void _showExportDialog({
     required String title,
     required String jsonString,
+    required String defaultFileName,
     String? subtitle,
   }) {
     showDialog<void>(
@@ -144,7 +147,7 @@ class _PackLibraryScreenState extends ConsumerState<PackLibraryScreen> {
                 const SizedBox(height: 12),
               ],
               Container(
-                constraints: const BoxConstraints(maxHeight: 300),
+                constraints: const BoxConstraints(maxHeight: 240),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
@@ -167,24 +170,80 @@ class _PackLibraryScreenState extends ConsumerState<PackLibraryScreen> {
           ),
         ),
         actions: [
-          TextButton.icon(
-            key: const Key('copy_json_button'),
-            icon: const Icon(Icons.copy_rounded, size: 18),
-            label: const Text('Copy to Clipboard'),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: jsonString));
-              Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('JSON copied to clipboard!'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
+            children: [
+              TextButton.icon(
+                key: const Key('copy_json_button'),
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: const Text('Copy to Clipboard'),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: jsonString));
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('JSON copied to clipboard!'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+              OutlinedButton.icon(
+                key: const Key('save_internal_button'),
+                icon: const Icon(Icons.folder_special_rounded, size: 16),
+                label: const Text('Save to Library'),
+                onPressed: () async {
+                  final storage = ref.read(appStorageProvider);
+                  await storage.savePackJsonToInternalFolder(
+                    fileName: defaultFileName,
+                    jsonContent: jsonString,
+                  );
+                  ref.read(packListProvider.notifier).importFromJson(jsonString);
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Saved to app folder! Puzzle is now in your Pack Library.'),
+                        backgroundColor: Colors.teal,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+              ),
+              FilledButton.icon(
+                key: const Key('save_device_button'),
+                icon: const Icon(Icons.download_rounded, size: 16),
+                label: const Text('Save to Device'),
+                onPressed: () async {
+                  final storage = ref.read(appStorageProvider);
+                  final path = await storage.exportJsonToDevice(
+                    defaultFileName: defaultFileName,
+                    jsonContent: jsonString,
+                  );
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          path != null
+                              ? 'Saved to file: $path'
+                              : 'File export cancelled.',
+                        ),
+                        backgroundColor: path != null ? Colors.blue.shade700 : null,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Close'),
+              ),
+            ],
           ),
         ],
       ),
@@ -193,25 +252,34 @@ class _PackLibraryScreenState extends ConsumerState<PackLibraryScreen> {
 
   void _exportActivePuzzle() {
     final activePuzzle = ref.read(gameProvider).puzzle;
-    final repo = ref.read(packRepositoryProvider);
-    final jsonStr = repo.exportPuzzleToJson(activePuzzle);
+    final storage = ref.read(appStorageProvider);
+    final packJson = storage.puzzleToPackJson(activePuzzle);
+    final jsonStr = JsonEncoder.withIndent('  ').convert(packJson);
+    final safeTitle = activePuzzle.title
+        .replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_')
+        .toLowerCase();
 
     _showExportDialog(
       title: 'Export Active Puzzle',
       subtitle:
-          'Standard JSON representation of "${activePuzzle.metadata.title}" (${activePuzzle.rows}x${activePuzzle.cols}, ${activePuzzle.totalWords} words).',
+          'Standard package JSON of "${activePuzzle.metadata.title}" (${activePuzzle.rows}x${activePuzzle.cols}, ${activePuzzle.totalWords} words).',
       jsonString: jsonStr,
+      defaultFileName: 'pack_$safeTitle.json',
     );
   }
 
   void _exportPack(PuzzlePack pack) {
     final repo = ref.read(packRepositoryProvider);
     final jsonStr = repo.exportPackToJson(pack);
+    final safeTitle = pack.title
+        .replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_')
+        .toLowerCase();
 
     _showExportDialog(
       title: 'Export Pack: ${pack.title}',
       subtitle: 'Complete schema containing ${pack.puzzleCount} puzzle definition(s).',
       jsonString: jsonStr,
+      defaultFileName: 'pack_$safeTitle.json',
     );
   }
 
@@ -313,13 +381,16 @@ class _PackLibraryScreenState extends ConsumerState<PackLibraryScreen> {
                           Icon(Icons.folder_special_rounded,
                               color: colorScheme.secondary, size: 24),
                           const SizedBox(width: 10),
-                          Text(
-                            'Puzzle Packs & Collections',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              'Puzzle Packs & Collections',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const Spacer(),
+                          const SizedBox(width: 8),
                           Text(
                             '${packs.length} Packs Loaded',
                             style: theme.textTheme.labelMedium?.copyWith(
@@ -594,23 +665,27 @@ class _ScriptPoolCard extends StatelessWidget {
           children: [
             // Top Row: Script Badge & Character Count
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    pool.nativeName,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: accent,
-                      fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      pool.nativeName,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: accent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

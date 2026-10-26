@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app_router.dart';
+import '../../../core/models/models.dart';
+import '../../word_search/application/game_provider.dart';
+import '../../word_search/domain/game_state.dart';
 
 /// Data model representing a menu action option.
 class MainMenuItem {
@@ -31,6 +35,27 @@ class MainMenuScreen extends StatelessWidget {
   });
 
   /// Optional navigation callback for direct test orchestration.
+  final void Function(String route)? onNavigate;
+
+  static const List<MainMenuItem> menuItems = _MainMenuContent.menuItems;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget content = _MainMenuContent(onNavigate: onNavigate);
+    try {
+      ProviderScope.containerOf(context);
+    } catch (_) {
+      // If no ProviderScope exists in ancestor tree (e.g. standalone widget test),
+      // wrap with local ProviderScope so Consumer inside _MainMenuContent functions.
+      content = ProviderScope(child: content);
+    }
+    return content;
+  }
+}
+
+class _MainMenuContent extends ConsumerWidget {
+  const _MainMenuContent({this.onNavigate});
+
   final void Function(String route)? onNavigate;
 
   static const List<MainMenuItem> menuItems = [
@@ -94,9 +119,15 @@ class MainMenuScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final gameState = ref.watch(gameProvider);
+    final hasActiveGame = gameState.status == GameStatus.playing &&
+        !gameState.isCompleted &&
+        (gameState.foundWords.isNotEmpty ||
+            (gameState.puzzle.title != 'Flutter Word Search' &&
+                gameState.puzzle.words.isNotEmpty));
 
     return Scaffold(
       appBar: AppBar(
@@ -153,7 +184,17 @@ class MainMenuScreen extends StatelessWidget {
                     children: [
                       // Header & Greeting Banner
                       _buildHeader(context, isWide),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 20),
+
+                      // Resume In-Progress Game Hero Card
+                      if (hasActiveGame) ...[
+                        _ResumeGameCard(
+                          gameState: gameState,
+                          onResume: () => _handleNavigation(context, AppRoutes.game),
+                        ),
+                        const SizedBox(height: 20),
+                      ] else
+                        const SizedBox(height: 8),
 
                       // Responsive Wrap Layout for Menu Options
                       Wrap(
@@ -358,3 +399,122 @@ class _MainMenuTile extends StatelessWidget {
     );
   }
 }
+
+/// Interactive banner highlighting the active in-progress puzzle.
+class _ResumeGameCard extends StatelessWidget {
+  const _ResumeGameCard({
+    required this.gameState,
+    required this.onResume,
+  });
+
+  final GameState gameState;
+  final VoidCallback onResume;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final total = gameState.puzzle.words.length;
+    final found = gameState.foundWords.length;
+    final progress = total > 0 ? (found / total) : 0.0;
+
+    return Card(
+      key: const Key('resume_game_card'),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: colorScheme.primary.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+      ),
+      color: colorScheme.primaryContainer.withValues(alpha: 0.25),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'PUZZLE IN PROGRESS',
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.timer_outlined,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '$found / $total words',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              gameState.puzzle.title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Theme: ${gameState.puzzle.metadata.theme} • Difficulty: ${gameState.puzzle.difficulty.name.toUpperCase()}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 6,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Focus(
+              canRequestFocus: false,
+              child: FilledButton.icon(
+                key: const Key('resume_game_button'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 44),
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                ),
+                onPressed: onResume,
+                icon: const Icon(Icons.play_arrow_rounded, size: 22),
+                label: const Text(
+                  'Resume Game',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

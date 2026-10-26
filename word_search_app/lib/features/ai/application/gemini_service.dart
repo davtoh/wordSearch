@@ -12,6 +12,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 
 import '../../../core/engine/grid_engine.dart';
 import '../../../core/models/models.dart';
+import '../../../core/storage/app_storage.dart';
 
 /// Exception thrown when Gemini API key is missing or not configured.
 class GeminiConfigException implements Exception {
@@ -64,11 +65,28 @@ final customGeminiApiKeyProvider =
 
 class CustomApiKeyNotifier extends Notifier<String?> {
   @override
-  String? build() => null;
+  String? build() {
+    _loadFromStorage();
+    return null;
+  }
+
+  Future<void> _loadFromStorage() async {
+    try {
+      final storage = ref.read(appStorageProvider);
+      final saved = await storage.loadCustomApiKey();
+      if (saved != null && saved.isNotEmpty) {
+        state = saved;
+      }
+    } catch (_) {}
+  }
 
   void setApiKey(String? key) {
     final trimmed = key?.trim();
-    state = (trimmed != null && trimmed.isNotEmpty) ? trimmed : null;
+    final value = (trimmed != null && trimmed.isNotEmpty) ? trimmed : null;
+    state = value;
+    try {
+      ref.read(appStorageProvider).saveCustomApiKey(value);
+    } catch (_) {}
   }
 }
 
@@ -80,11 +98,27 @@ final selectedGeminiModelProvider =
 
 class SelectedGeminiModelNotifier extends Notifier<String> {
   @override
-  String build() => GeminiService.resolveDefaultModel();
+  String build() {
+    _loadFromStorage();
+    return GeminiService.resolveDefaultModel();
+  }
+
+  Future<void> _loadFromStorage() async {
+    try {
+      final storage = ref.read(appStorageProvider);
+      final saved = await storage.loadSelectedModel();
+      if (saved != null && kGeminiModels.any((m) => m.id == saved)) {
+        state = saved;
+      }
+    } catch (_) {}
+  }
 
   void setModel(String modelId) {
     if (kGeminiModels.any((m) => m.id == modelId)) {
       state = modelId;
+      try {
+        ref.read(appStorageProvider).saveSelectedModel(modelId);
+      } catch (_) {}
     }
   }
 }

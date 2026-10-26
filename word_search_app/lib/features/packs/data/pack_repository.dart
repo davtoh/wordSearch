@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/scripts.dart';
 import '../../../core/engine/grid_engine.dart';
 import '../../../core/models/models.dart';
+import '../../../core/storage/app_storage.dart';
 
 // ─────────────────────────────────────────────────────────
 // ScriptPoolInfo Model
@@ -149,17 +150,36 @@ class PuzzlePack extends Equatable {
       );
 
   factory PuzzlePack.fromJson(Map<String, dynamic> json, {String? filePath}) {
-    final rawPuzzles = json['puzzles'] as List<dynamic>? ?? [];
-    final puzzles = rawPuzzles
-        .whereType<Map<String, dynamic>>()
-        .toList();
+    final rawPuzzles = json['puzzles'] as List<dynamic>?;
+    final List<Map<String, dynamic>> puzzles;
+    if (rawPuzzles != null) {
+      puzzles = rawPuzzles.whereType<Map<String, dynamic>>().toList();
+    } else if (json.containsKey('words')) {
+      final meta = json['metadata'] as Map<String, dynamic>?;
+      puzzles = [
+        {
+          'title': meta?['title'] ?? json['title'] ?? 'Puzzle',
+          'theme': meta?['theme'] ?? 'General',
+          'difficulty': meta?['difficulty'] ?? 'easy',
+          'words': json['words'],
+        }
+      ];
+    } else {
+      puzzles = [];
+    }
+
+    final meta = json['metadata'] as Map<String, dynamic>?;
+    final id = json['id'] as String? ?? (meta?['id'] as String?) ?? 'pack_unknown';
+    final title = json['title'] as String? ?? (meta?['title'] as String?) ?? 'Untitled Pack';
+    final language = json['language'] as String? ?? (meta?['language'] as String?) ?? 'en';
+    final scriptTypeStr = json['script_type'] as String? ?? (meta?['script_type'] as String?) ?? 'latin';
 
     return PuzzlePack(
-      id: json['id'] as String? ?? 'pack_unknown',
-      title: json['title'] as String? ?? 'Untitled Pack',
+      id: id,
+      title: title,
       description: json['description'] as String? ?? '',
-      language: json['language'] as String? ?? 'en',
-      scriptType: ScriptType.fromValue(json['script_type'] as String? ?? 'latin'),
+      language: language,
+      scriptType: ScriptType.fromValue(scriptTypeStr),
       puzzlesData: puzzles,
       filePath: filePath,
     );
@@ -494,7 +514,29 @@ class PackListNotifier extends Notifier<List<PuzzlePack>> {
   @override
   List<PuzzlePack> build() {
     final repo = ref.watch(packRepositoryProvider);
+    _loadInternalSavedPacks();
     return repo.getAllPacks();
+  }
+
+  Future<void> _loadInternalSavedPacks() async {
+    try {
+      final storage = ref.read(appStorageProvider);
+      final internalPacks = await storage.loadAllInternalPacks();
+      if (internalPacks.isNotEmpty) {
+        final repo = ref.read(packRepositoryProvider);
+        for (final p in internalPacks) {
+          repo.registerPack(p);
+        }
+        state = repo.getAllPacks();
+      }
+    } catch (_) {}
+  }
+
+  /// Registers an in-memory or generated pack and updates reactive state.
+  void registerPack(PuzzlePack pack) {
+    final repo = ref.read(packRepositoryProvider);
+    repo.registerPack(pack);
+    state = repo.getAllPacks();
   }
 
   /// Imports a new pack from a JSON string and updates the reactive state.
