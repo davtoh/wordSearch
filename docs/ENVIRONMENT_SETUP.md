@@ -147,4 +147,12 @@ flutter doctor -v
 | `CocoaPods not installed` | Missing CocoaPods for iOS/macOS pod dependency resolution | Run `brew install cocoapods` or `sudo gem install cocoapods`. |
 | `Unable to locate a Java Runtime` | JDK not installed or Android Studio bundled JDK not linked | Install JDK via `brew install openjdk` or set `JAVA_HOME` to Android Studio's bundled jbr: `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`. |
 | `Xcode installation is incomplete` | Xcode command line tools pointing to CLT instead of full Xcode | Run `sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer`. |
+| `No supported devices found matching '127.0.0.1:<port>'` (BlueStacks) | ADB daemon restarted due to version mismatch between BlueStacks `HD-Adb.exe` (v36) and Android SDK `adb.exe` (v41) | Connect using the Android SDK's `adb.exe` or run `python scripts/connect_bluestacks.py`. See [BLUESTACKS_SETUP.md](file:///c:/dev/phone_projects/python/wordSearch/docs/BLUESTACKS_SETUP.md). |
+
+---
+
+## 7. Windows & Emulator Testing
+
+For running and testing the Flutter mobile application on Windows without physical devices, see the [BlueStacks 5 Android Testing Guide](file:///c:/dev/phone_projects/python/wordSearch/docs/BLUESTACKS_SETUP.md). It includes automated connection scripts (`scripts/connect_bluestacks.py`, `scripts/connect_bluestacks.ps1`) and instructions for resolving dynamic port discovery and ADB version mismatches.
+
 

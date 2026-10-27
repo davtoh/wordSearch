@@ -158,7 +158,12 @@ wordSearch/
 ├── cli/                             # Lightweight Terminal Runner
 │   └── terminal_game.py             # ANSI text console player
 ├── tests/                           # Complete pytest unit test suite (20 tests)
+├── scripts/                         # Emulator & Bridge Scripts
+│   ├── connect_bluestacks.py        # BlueStacks ADB Bridge & Flutter Connector (with --install-skill)
+│   └── connect_bluestacks.ps1       # PowerShell BlueStacks ADB Connector
 └── docs/                            # Documentation
+    ├── BLUESTACKS_SETUP.md          # BlueStacks 5 Android Testing Guide & ADB Bridge
+    ├── ENVIRONMENT_SETUP.md         # Full Flutter / Dart Environment Setup Guide
     ├── FLUTTER_MIGRATION_ROADMAP.md # Blueprint for Flutter/Dart & Play Store release
     ├── JSON_SCHEMA_SPEC.md          # Open JSON Specification
     └── ANDROID_PYDROID3_GUIDE.md    # Instructions for running in Pydroid 3
@@ -185,4 +190,6 @@ All 20 automated tests validate:
 
 ## 📱 Cross-Platform Migration to Flutter
 
-See [docs/FLUTTER_MIGRATION_ROADMAP.md](docs/FLUTTER_MIGRATION_ROADMAP.md) for complete details on porting the core engine to Dart, rendering the grid with `CustomPainter`, and publishing to Google Play Store and iOS App Store.
+- See [docs/FLUTTER_MIGRATION_ROADMAP.md](docs/FLUTTER_MIGRATION_ROADMAP.md) for complete details on porting the core engine to Dart, rendering the grid with `CustomPainter`, and publishing to Google Play Store and iOS App Store.
+- For running and testing the Flutter app on Windows via BlueStacks 5, see [docs/BLUESTACKS_SETUP.md](docs/BLUESTACKS_SETUP.md).
+
